@@ -36,7 +36,7 @@ r = requests.get(api_url + 'accounts', auth=auth)
 print r.json()
 
 """
-import gdax
+import gdax, time
 public_client = gdax.PublicClient()
 
 public_client.get_products()
@@ -76,6 +76,56 @@ wsClient = gdax.WebsocketClient(url="wss://ws-feed.gdax.com", products="BTC-USD"
 wsClient.close()
 
 #wss://ws-feed.gdax.com     #websocket feed
+
+
+# Paramters are optional
+wsClient = gdax.WebsocketClient(url="wss://ws-feed.gdax.com", products="BTC-USD")
+# Do other stuff...
+wsClient.close()
+
+#subscribe to multiple products
+wsClient = gdax.WebsocketClient(url="wss://ws-feed.gdax.com", 
+                                products=["BTC-USD", "ETH-USD"])
+
+
+#three methods to overwrite before init so can react to streaming
+#onOpen - called once, immediately before the socket connection is made, this is where you want to add inital parameters.
+#onMessage - called once for every message that arrives and accepts one argument that contains the message of dict type.
+#onClose - called once after the websocket has been closed
+class myWebsocketClient(gdax.WebsocketClient):
+    def on_open(self):
+        self.url = "wss://ws-feed.gdax.com/"
+        self.products = ["LTC-USD"]
+        self.message_count = 0
+        print("Lets count the messages!")
+    def on_message(self, msg):
+        self.message_count += 1
+        if 'price' in msg and 'type' in msg:
+            print ("Message type:", msg["type"], 
+                   "\t@ {}.3f".format(float(msg["price"])))
+    def on_close(self):
+        print("-- Goodbye! --")
+
+wsClient = myWebsocketClient()
+wsClient.start()
+print(wsClient.url, wsClient.products)
+while (wsClient.message_count < 500):
+    print ("\nmessage_count =", "{} \n".format(wsClient.message_count))
+    time.sleep(1)
+wsClient.close()
+
+
+"""
+##NOT WORKING
+# OrderBook subscribes to a websocket and keeps a real-time record of the orderbook for the product_id input. 
+order_book = gdax.OrderBook(product_id='BTC-USD')
+order_book.start()
+time.sleep(10)
+order_book.close()
+
+"""
+
+
 
 
 
