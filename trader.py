@@ -39,14 +39,15 @@ print r.json()
 import gdax, time
 public_client = gdax.PublicClient()
 
-public_client.get_products()
+public_client.get_products()    #list of dictionaries and like conversions btw LTC, EUR, USD, BTC, GBP, ETH
+                                #ones interested in: LTC-BTC, ETH-BTC, LTC-USD, BTC-USD, ETH-USD
 
 # Get the order book at the default level.
-public_client.get_product_order_book('BTC-USD')
+public_client.get_product_order_book('ETH-USD')
 # Get the order book at a specific level.
-public_client.get_product_order_book('BTC-USD', level=1) #  Only the best bid and ask
-public_client.get_product_order_book('BTC-USD', level=2) #  Top 50 bids and asks (aggregated)
-public_client.get_product_order_book('BTC-USD', level=3) #  Full order book (non aggregated)
+public_client.get_product_order_book('ETH-USD', level=1) #  Only the best bid and ask
+public_client.get_product_order_book('ETH-USD', level=2) #  Top 50 bids and asks (aggregated)
+public_client.get_product_order_book('ETH-USD', level=3) #  Full order book (non aggregated)
 
 # Get the product ticker for a specific product.
 public_client.get_product_ticker(product_id='ETH-USD')   #  Basic info about last trade 
@@ -56,8 +57,14 @@ public_client.get_product_trades(product_id='ETH-USD')   #  Get latest trades
 
 public_client.get_product_historic_rates('ETH-USD')
 # To include other parameters, see function docstring:
-public_client.get_product_historic_rates('ETH-USD', granularity=3000)   # 200 candles max, in  in ISO 8601 format
+public_client.get_product_historic_rates('ETH-USD', granularity=3000)   # 200 candles max, in  in ISO 8601 format, internationally acepted one 
 #public_client.get_product_historic_rates('ETH-USD', start, end, granularity=3000)
+#ISO time example: 2017-07-01T19:26:10+00:00
+public_client.get_product_historic_rates('ETH-USD', start='2017-07-01T19:26:10+00:00', end='2017-07-01T19:33:10+00:00', granularity=60)
+#time, low, high, open, close, volume
+#Desired timeslice in seconds
+#start, end in ISO 860
+#but output in epoch
 
 public_client.get_product_24hr_stats('ETH-USD')         #  high, last, low, open, vol, vol_30day
 
@@ -126,7 +133,23 @@ order_book.close()
 """
 
 
+##For print time out for myself, maybe for quer
+from datetime import datetime
+from dateutil import tz
 
+# METHOD 1: Hardcode zones:
+#from_zone = tz.gettz('UTC')
+#to_zone = tz.gettz('America/Los_Angeles')
 
+# METHOD 2: Auto-detect zones:
+from_zone = tz.tzutc()
+to_zone = tz.tzlocal()
 
+utc_time = datetime.utcnow()
+
+# Tell the datetime object that it's in UTC time zone since 
+utc_time = utc_time.replace(tzinfo=from_zone)
+
+# Convert time zone
+local_time = utc_time.astimezone(to_zone)
 
