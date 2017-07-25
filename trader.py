@@ -153,3 +153,11 @@ utc_time = utc_time.replace(tzinfo=from_zone)
 # Convert time zone
 local_time = utc_time.astimezone(to_zone)
 
+
+##ANOVA
+##pandas moving_avg
+##tf
+##nltk
+
+
+
