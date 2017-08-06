@@ -1,10 +1,15 @@
 # 2017/08/06
 import gdax
-from datetime import datetime
+import csv
+from datetime import datetime, timedelta
+from optparse import OptionParser
+from os.path import join
+
 
 class CollectData():
     
-    SAMPLING_INTERVAL = 30 * 60 #every 30 min
+    SAMPLING_INTERVAL = 5
+    INTERVAL_MULTIPLIER = 60
     DATE_FORMAT = '%Y/%m/%d'
     
     def __init__(self, **kwargs):
@@ -12,155 +17,81 @@ class CollectData():
         today = datetime.utcnow()
         self.conversion_interested_in = 'ETH-USD'
         
-        self.start_date = today.strftime(Trader.DATE_FORMAT)
-        self.end_date = today.strftime(Trader.DATE_FORMAT)
+        self.start_date = (today - timedelta(days=1)).strftime(CollectData.DATE_FORMAT)
+        self.end_date = today.strftime(CollectData.DATE_FORMAT)
+        if kwargs.get('date'):           
+            self.start_date = (datetime.strptime(kwargs.get('date'), CollectData.DATE_FORMAT) - timedelta(days=1)).strftime(CollectData.DATE_FORMAT)    
+            self.end_date = kwargs.get('date')
         if kwargs.get('start_date') and kwargs.get('end_date'):
             self.start_date = kwargs.get('start_date')
             self.end_date = kwargs.get('end_date')
-            
+        
+        self.sampling_interval = CollectData.SAMPLING_INTERVAL * CollectData.INTERVAL_MULTIPLIER
+        if kwargs.get('sampling_interval'):
+            self.sampling_interval = int(kwargs.get('sampling_interval')) * CollectData.INTERVAL_MULTIPLIER
     
-            
-        def isoToEpoch(self):
-        ##For print time out for myself, maybe for quer
-        from datetime import datetime
-        from dateutil import tz
+        print(self.start_date)
+        print(self.end_date)
+        print(self.sampling_interval)
         
-        # METHOD 1: Hardcode zones:
-        #from_zone = tz.gettz('UTC')
-        #to_zone = tz.gettz('America/Los_Angeles')
+    def run(self):
+        self.queryData()
+        self.writeData()
         
-        # METHOD 2: Auto-detect zones:
-        from_zone = tz.tzutc()
-        to_zone = tz.tzlocal()
-        
-        utc_time = datetime.utcnow()
-        
-        # Tell the datetime object that it's in UTC time zone since 
-        utc_time = utc_time.replace(tzinfo=from_zone)
-        
-        # Convert time zone
-        local_time = utc_time.astimezone(to_zone)
-        
-    def epochToIso(self):
-        pass
-       
-            
-            
-public_client = gdax.PublicClient()
-today = datetime.utcnow()
-conversion_interested_in = 'ETH-USD'
-
-
-######
- def collectHistoricData(self):
-        public_client.
-        
-        #using API
-        #save to csv
-        public_client.get_product_historic_rates('ETH-USD')
-        # To include other parameters, see function docstring:
-        public_client.get_product_historic_rates('ETH-USD', granularity=3000)   # 200 candles max, in  in ISO 8601 format, internationally acepted one 
-        #public_client.get_product_historic_rates('ETH-USD', start, end, granularity=3000)
-        #ISO time example: 2017-07-01T19:26:10+00:00
-        public_client.get_product_historic_rates('ETH-USD', start='2017-07-01T19:26:10+00:00', end='2017-07-01T19:33:10+00:00', granularity=60)
-        #time, low, high, open, close, volume
-        #Desired timeslice in seconds
-        #start, end in ISO 860
-        #but output in epoch
-        
-        public_client.get_time()                                #  epoch (Unix like time) : iso
+    def queryData(self):
+        start_str = self.isoString(self.start_date)
+        end_str = self.isoString(self.end_date)
+        self.data = self.public_client.get_product_historic_rates(self.conversion_interested_in, start=start_str, end=end_str, granularity=self.sampling_interval)
     
+        print(self.data)
     def writeData(self):
-        #tmp/eth/date
-    #calculations for:   
-    # moving average
-    #opening, closing
-    #median, std +1, std-1
-    #volume
+        output_file = self.generateFileName()
+        print(output_file)
+        csv_header = ['time', 'low', 'high', 'open', 'close', 'volume']
+        with open(output_file, 'w') as f:
+            csv_writer = csv.writer(f)
+            csv_writer.writerow(csv_header)
+            for line in self.data:
+                csv_writer.writerow(line)
+                
+    def isoString(self, date):
+        date_obj = datetime.strptime(date, CollectData.DATE_FORMAT)
+        print(date_obj.isoformat())
+        return date_obj.isoformat()
     
-    #able to train newer ones with more info like top 50 bids etc
-    def collectRealTimeData(self):
-        #not sure if should support
-        #prob need websocket integration
-        # Get the order book at the default level.
-        public_client.get_product_order_book('ETH-USD')
-        # Get the order book at a specific level.
-        public_client.get_product_order_book('ETH-USD', level=1) #  Only the best bid and ask
-        public_client.get_product_order_book('ETH-USD', level=2) #  Top 50 bids and asks (aggregated)
-        public_client.get_product_order_book('ETH-USD', level=3) #  Full order book (non aggregated)
-        
-        # Get the product ticker for a specific product.
-        public_client.get_product_ticker(product_id='ETH-USD')   #  Basic info about last trade 
-        
-        # Get the product trades for a specific product.
-        public_client.get_product_trades(product_id='ETH-USD')   #  Get latest trades
-        
-        public_client.get_product_24hr_stats('ETH-USD')         #  high, last, low, open, vol, vol_30day
-        request = public_client.get_fills(limit=100)
-
-
-
-
-
-
-
-######
-
-##try box and whisker plots instead of candles
-
-#Websocket client
-# Paramters are optional
-wsClient = gdax.WebsocketClient(url="wss://ws-feed.gdax.com", products="BTC-USD")
-# Do other stuff...
-wsClient.close()
-
-#wss://ws-feed.gdax.com     #websocket feed
-
-
-# Paramters are optional
-wsClient = gdax.WebsocketClient(url="wss://ws-feed.gdax.com", products="BTC-USD")
-# Do other stuff...
-wsClient.close()
-
-#subscribe to multiple products
-wsClient = gdax.WebsocketClient(url="wss://ws-feed.gdax.com", 
-                                products=["BTC-USD", "ETH-USD"])
-
-
-#three methods to overwrite before init so can react to streaming
-#onOpen - called once, immediately before the socket connection is made, this is where you want to add inital parameters.
-#onMessage - called once for every message that arrives and accepts one argument that contains the message of dict type.
-#onClose - called once after the websocket has been closed
-class myWebsocketClient(gdax.WebsocketClient):
-    def on_open(self):
-        self.url = "wss://ws-feed.gdax.com/"
-        self.products = ["LTC-USD"]
-        self.message_count = 0
-        print("Lets count the messages!")
-    def on_message(self, msg):
-        self.message_count += 1
-        if 'price' in msg and 'type' in msg:
-            print ("Message type:", msg["type"], 
-                   "\t@ {}.3f".format(float(msg["price"])))
-    def on_close(self):
-        print("-- Goodbye! --")
-
-wsClient = myWebsocketClient()
-wsClient.start()
-print(wsClient.url, wsClient.products)
-while (wsClient.message_count < 500):
-    print ("\nmessage_count =", "{} \n".format(wsClient.message_count))
-    time.sleep(1)
-wsClient.close()
-
-
-"""
-##NOT WORKING
-# OrderBook subscribes to a websocket and keeps a real-time record of the orderbook for the product_id input. 
-order_book = gdax.OrderBook(product_id='BTC-USD')
-order_book.start()
-time.sleep(10)
-order_book.close()
-
-"""
+    def generateFileName(self):
+        formatted_start_date = datetime.strptime(self.start_date, CollectData.DATE_FORMAT).strftime('%Y%m%d')
+        return join('data',
+                    'eth',
+                    'gdax_data' + formatted_start_date + '.csv')
+    
+if __name__ == '__main__':
+    opt_parser = OptionParser()
+    opt_parser.add_option('-d',
+                         '--date',
+                         dest='date',
+                         help='Specific date (YYYY/mm/dd) to collect data for')
+    opt_parser.add_option('-s',
+                          '--start_date',
+                          dest='start_date',
+                          help='Start date if want to collect for more than one day')
+    opt_parser.add_option('-e',
+                          '--end_date',
+                          dest='end_date',
+                          help='End date if want to collect for more than one day')
+    opt_parser.add_option('-i',
+                          '--sample_interval',
+                          dest='sample_interval',
+                          help='Option to set sampling interval in minutes')
+    (options, args) = opt_parser.parse_args()
+    
+    print("options: {0}".format(options))
+    print("args: {0}".format(args))
+    
+    collect_data_obj = CollectData(date=options.date,
+                                   start_date=options.start_date,
+                                   end_date=options.end_date,
+                                   sample_interval = options.sample_interval)
+    collect_data_obj.run()
+    
 
