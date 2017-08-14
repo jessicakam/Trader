@@ -42,7 +42,6 @@ class RNNTrader(RNN):
         print('Building...')
         # Initialising the RNN
         self.regressor = Sequential()
-        print('self.regressor: {0}'.format(self.regressor))
         
         # Adding the input layer and the LSTM layer
         self.regressor.add(LSTM(units = 4, activation = 'sigmoid', input_shape = (None, 1))) #input_shape = (time steps, num_features)
@@ -74,13 +73,13 @@ class RNNTrader(RNN):
         """
         print('Making predictions...')
         # Getting the real stock price of 2017
-        test_set = pd.read_csv('data/eth/2017/08/02/gdax.csv')
+        test_set = pd.read_csv('data/eth/2017/08/01/gdax.csv')
         self.real_price = test_set.iloc[:,3:4].values
         
         # Getting the predicted stock price of 2017
         inputs = self.real_price
         inputs = self.sc.transform(inputs)
-        inputs = np.reshape(inputs, (23, 1, 1))
+        inputs = np.reshape(inputs, (24, 1, 1))
         self.predicted_price = self.regressor.predict(inputs)
         self.predicted_price = self.sc.inverse_transform(self.predicted_price)
 

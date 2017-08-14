@@ -55,6 +55,7 @@ if __name__ == '__main__':
     trader.scaleFeatures()
     trader.getInputsAndOutputs()
     trader.reshape()
+    trader.build()
     trader.compileNN(optimizer='adam', loss='mean_squared_error')
     trader.fitToTrainingSet(batch_size = 32, epochs = 200)
     trader.makePredictions()
