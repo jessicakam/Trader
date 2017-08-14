@@ -30,9 +30,9 @@ class CollectData():
         if kwargs.get('sampling_interval'):
             self.sampling_interval = int(kwargs.get('sampling_interval')) * CollectData.INTERVAL_MULTIPLIER
     
-        print(self.start_date)
-        print(self.end_date)
-        print(self.sampling_interval)
+        #print(self.start_date)
+        #print(self.end_date)
+        #print(self.sampling_interval)
         
     def run(self):
         self.queryData()
@@ -43,7 +43,7 @@ class CollectData():
         end_str = self.isoString(self.end_date)
         self.data = self.public_client.get_product_historic_rates(self.conversion_interested_in, start=start_str, end=end_str, granularity=self.sampling_interval)
     
-        print(self.data)
+        #print(self.data)
     def writeData(self):
         output_file = self.generateFileName()
         print(output_file)
@@ -56,7 +56,7 @@ class CollectData():
                 
     def isoString(self, date):
         date_obj = datetime.strptime(date, CollectData.DATE_FORMAT)
-        print(date_obj.isoformat())
+        #print(date_obj.isoformat())
         return date_obj.isoformat()
     
     def generateFileName(self):
@@ -80,8 +80,8 @@ if __name__ == '__main__':
                           dest='end_date',
                           help='End date if want to collect for more than one day')
     opt_parser.add_option('-i',
-                          '--sample_interval',
-                          dest='sample_interval',
+                          '--sampling_interval',
+                          dest='sampling_interval',
                           help='Option to set sampling interval in minutes')
     (options, args) = opt_parser.parse_args()
     
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     collect_data_obj = CollectData(date=options.date,
                                    start_date=options.start_date,
                                    end_date=options.end_date,
-                                   sample_interval = options.sample_interval)
+                                   sampling_interval = options.sampling_interval)
     collect_data_obj.run()
     
 
