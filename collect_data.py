@@ -1,12 +1,14 @@
 # 2017/08/06
 import gdax
 import csv
+import os
 from datetime import datetime, timedelta
 from optparse import OptionParser
-from os.path import join
 
 
 class CollectData():
+    #TODO
+    
     
     SAMPLING_INTERVAL = 5
     INTERVAL_MULTIPLIER = 60
@@ -20,8 +22,8 @@ class CollectData():
         self.start_date = (today - timedelta(days=1)).strftime(CollectData.DATE_FORMAT)
         self.end_date = today.strftime(CollectData.DATE_FORMAT)
         if kwargs.get('date'):           
-            self.start_date = (datetime.strptime(kwargs.get('date'), CollectData.DATE_FORMAT) - timedelta(days=1)).strftime(CollectData.DATE_FORMAT)    
-            self.end_date = kwargs.get('date')
+            self.start_date = kwargs.get('date')
+            self.end_date = (datetime.strptime(kwargs.get('date'), CollectData.DATE_FORMAT) + timedelta(days=1)).strftime(CollectData.DATE_FORMAT)    
         if kwargs.get('start_date') and kwargs.get('end_date'):
             self.start_date = kwargs.get('start_date')
             self.end_date = kwargs.get('end_date')
@@ -35,35 +37,63 @@ class CollectData():
         #print(self.sampling_interval)
         
     def run(self):
-        self.queryData()
-        self.writeData()
+        self.generateListDates()
+        for date in self.lst_dates:
+            print(date)
+            self.date = date
+            self.queryData()
+            self.generateOutputFilename()
+            self.makeFolders()
+            print(self.output_file)
+            self.writeData()
+        
+    def generateListDates(self):
+        start = self.start_date
+        end = self.end_date
+        self.lst_dates = []
+        while start <= end:
+            self.lst_dates.append(start)
+            start_obj = datetime.strptime(start, CollectData.DATE_FORMAT) + timedelta(days=1)
+            start = datetime.strftime(start_obj, CollectData.DATE_FORMAT)
         
     def queryData(self):
-        start_str = self.isoString(self.start_date)
-        end_str = self.isoString(self.end_date)
+        start_str = self.dateStringToIsoString(self.date) #(self.start_date)
+        next_day_obj = datetime.strptime(self.date, CollectData.DATE_FORMAT) + timedelta(days=1)
+        end_str = self.dateStringToIsoString(datetime.strftime(next_day_obj, CollectData.DATE_FORMAT))  #(self.end_date)
         self.data = self.public_client.get_product_historic_rates(self.conversion_interested_in, start=start_str, end=end_str, granularity=self.sampling_interval)
-    
+        
+        #print('DATA')
         #print(self.data)
+        
     def writeData(self):
-        output_file = self.generateFileName()
-        print(output_file)
+        #output_file = self.generateOutputFilename()
         csv_header = ['time', 'low', 'high', 'open', 'close', 'volume']
-        with open(output_file, 'w') as f:
+        with open(self.output_file, 'w') as f:
             csv_writer = csv.writer(f)
             csv_writer.writerow(csv_header)
             for line in self.data:
                 csv_writer.writerow(line)
                 
-    def isoString(self, date):
+    def dateStringToIsoString(self, date):
         date_obj = datetime.strptime(date, CollectData.DATE_FORMAT)
         #print(date_obj.isoformat())
         return date_obj.isoformat()
     
-    def generateFileName(self):
-        formatted_start_date = datetime.strptime(self.start_date, CollectData.DATE_FORMAT).strftime('%Y%m%d')
-        return join('data',
-                    'eth',
-                    'gdax_data' + formatted_start_date + '.csv')
+    def generateOutputFilename(self):
+        #formatted_start_date = datetime.strptime(self.start_date, CollectData.DATE_FORMAT).strftime('%Y%m%d')
+        self.output_file = os.path.join('data',
+                                'eth',
+                                self.date,
+                                'gdax.csv')
+    def makeFolders(self):
+        year, month, day = self.date.split('/')
+        #year_month = os.path.join(year, month)
+        folders = ['data', 'eth', year, month, day]
+        path_so_far = ''
+        for folder in folders:
+            path_so_far = os.path.join(path_so_far, folder)
+            if not os.path.exists(path_so_far):
+                os.makedirs(path_so_far)
     
 if __name__ == '__main__':
     opt_parser = OptionParser()
