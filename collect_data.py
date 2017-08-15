@@ -31,10 +31,6 @@ class CollectData():
         self.sampling_interval = CollectData.SAMPLING_INTERVAL * CollectData.INTERVAL_MULTIPLIER
         if kwargs.get('sampling_interval'):
             self.sampling_interval = int(kwargs.get('sampling_interval')) * CollectData.INTERVAL_MULTIPLIER
-    
-        #print(self.start_date)
-        #print(self.end_date)
-        #print(self.sampling_interval)
         
     def run(self):
         self.generateListDates()
@@ -62,11 +58,7 @@ class CollectData():
         end_str = self.dateStringToIsoString(datetime.strftime(next_day_obj, CollectData.DATE_FORMAT))  #(self.end_date)
         self.data = self.public_client.get_product_historic_rates(self.conversion_interested_in, start=start_str, end=end_str, granularity=self.sampling_interval)
         
-        #print('DATA')
-        #print(self.data)
-        
     def writeData(self):
-        #output_file = self.generateOutputFilename()
         csv_header = ['time', 'low', 'high', 'open', 'close', 'volume']
         with open(self.output_file, 'w') as f:
             csv_writer = csv.writer(f)
@@ -76,18 +68,15 @@ class CollectData():
                 
     def dateStringToIsoString(self, date):
         date_obj = datetime.strptime(date, CollectData.DATE_FORMAT)
-        #print(date_obj.isoformat())
         return date_obj.isoformat()
     
     def generateOutputFilename(self):
-        #formatted_start_date = datetime.strptime(self.start_date, CollectData.DATE_FORMAT).strftime('%Y%m%d')
         self.output_file = os.path.join('data',
                                 'eth',
                                 self.date,
                                 'gdax.csv')
     def makeFolders(self):
         year, month, day = self.date.split('/')
-        #year_month = os.path.join(year, month)
         folders = ['data', 'eth', year, month, day]
         path_so_far = ''
         for folder in folders:
