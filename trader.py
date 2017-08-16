@@ -147,10 +147,12 @@ class RNNTrader(RNN):
     def generateModelName(self, date):
         return os.path.join('model', date, 'RNNTrader_refactored.hd5') #
     
-    def makeFolders(self):
+    def makeFolders(self, initial_folder):
         year, month, day = self.date.split('/')
-        folders = ['model', year, month, day]
-        path_so_far = ''
+        folders = [year, month, day] #model
+        if not os.path.exists(initial_folder):
+            os.makedirs(initial_folder)
+        path_so_far = initial_folder
         for folder in folders:
             path_so_far = os.path.join(path_so_far, folder)
             if not os.path.exists(path_so_far):
@@ -158,7 +160,7 @@ class RNNTrader(RNN):
     
     def saveModel(self):
         model_name = self.generateModelName(self.date)
-        self.makeFolders()
+        self.makeFolders('model')
         self.regressor.save(model_name)
         del self.regressor
         
@@ -184,4 +186,4 @@ class RNNTrader(RNN):
                 date_object = date_object - timedelta(days=1)
         print('Found model: {0}'.format(model_name))
         return model_name
-    
+

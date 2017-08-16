@@ -1,7 +1,38 @@
 # 2017/08/06
 
-class WebApp():
-    pass
+from trader import RNNTrader
+
+class WebApp(RNNTrader):
+    #
+    def makeRecommendation(self):
+        #The price is currently ___. I predict it will be ___ in an hour. You may want to consider buy/sell if you can
+        # ... It's probably best to just hold
+        #Ooooo I foresee a good spike coming up. Go in
+        #Oooo I foresee a good dip coming up. 
+        #Squakk
+        #Eeeeeeeegret
+    
+    def logRecommendation(self):
+        recommendation = self.makeRecommendation()
+        self.makeFolders('logs')
+        self.generateLogName(self)
+        #open log file and write to it
+        
+    def makeRealTimeHourlyPredictions(self):
+        print('Making predictions...')
+        # Getting the real prices for a day
+        test_set = pd.read_csv(self.file_to_import) #'data/eth/2017/08/01/gdax.csv')
+        self.real_price = test_set.iloc[:,3:4].values
+        
+        # Getting the predicted prices for the day
+        inputs = self.real_price
+        inputs = self.sc.transform(inputs)
+        inputs = np.reshape(inputs, (len(self.real_price), 1, 1)) #24, 1, 1
+        self.predicted_price = self.regressor.predict(inputs)
+        self.predicted_price = self.sc.inverse_transform(self.predicted_price)
+    
+    
+    
 
 
 
