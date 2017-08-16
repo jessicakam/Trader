@@ -75,6 +75,7 @@ class RNNTrader(RNN):
         self.visualizeResults()
         self.evaluate()
         self.saveModel()
+        self.deleteOldModel() #
             
     def findFileToImport(self):
         self.file_to_import = os.path.join('data',
@@ -145,22 +146,22 @@ class RNNTrader(RNN):
 
     def visualizeResults(self):
         print('Visualizing results')
-        desired_dates_to_visualize = ['2016/05/25', '2017/01/01', '2017/06/01', '2017/08/15'] #
-        if self.date in desired_dates_to_visualize: #
-            plt.plot(self.real_price, color = 'red', label = 'Real ETH Price')
-            plt.plot(self.predicted_price, color = 'blue', label = 'Predicted ETH Price')
-            plt.title('ETH Price Prediction' + ' ' + self.date)
-            plt.xlabel('Time')
-            plt.ylabel('ETH Price')
-            plt.legend()
-            plt.show()
-        
+        #desired_dates_to_visualize = ['2016/05/25', '2017/01/01', '2017/06/01', '2017/08/15'] #
+        #if self.date in desired_dates_to_visualize: #
+        plt.plot(self.real_price, color = 'red', label = 'Real ETH Price')
+        plt.plot(self.predicted_price, color = 'blue', label = 'Predicted ETH Price')
+        plt.title('ETH Price Prediction' + ' ' + self.date)
+        plt.xlabel('Time')
+        plt.ylabel('ETH Price')
+        plt.legend()
+        plt.show()
+    
     def evaluate(self):
         print('Evaluating')
         self.rmse = math.sqrt(mean_squared_error(self.real_price, self.predicted_price))
         
     def generateModelName(self, date):
-        return os.path.join('model', date, 'RNNTrader.hd5')
+        return os.path.join('model', date, 'RNNTrader_refactored.hd5') #
     
     def makeFolders(self):
         year, month, day = self.date.split('/')
@@ -178,10 +179,27 @@ class RNNTrader(RNN):
         del self.regressor
         
     def loadModel(self):
+        print('Loading model...')
         prev_day = self.dateStringToObject(self.date) - timedelta(days=1)
-        model_name = self.generateModelName(self.dateObjectToString(prev_day))
+        model_name = self.locateMostRecentModel(prev_day)
         self.regressor = load_model(model_name)
-    
+        
+    def deleteOldModel(self):
+        print('Deleting old model...')
+        prev_day = self.dateStringToObject(self.date) - timedelta(days=1)
+        model_name = self.locateMostRecentModel(prev_day)
+        os.remove(model_name)
+        
+    def locateMostRecentModel(self, date_object):
+        model_found = False #
+        while not model_found:    
+            model_name = self.generateModelName(self.dateObjectToString(date_object))
+            if os.path.isfile(model_name):
+                model_found = True #
+            else:
+                date_object = date_object - timedelta(days=1)
+        print('Found model: {0}'.format(model_name))
+        return model_name
     
     """
     
