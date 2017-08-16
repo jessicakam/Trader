@@ -8,6 +8,7 @@ from optparse import OptionParser
 
 class CollectData():
 
+    #TODO - maybe include irregular data from 2016/05/18 - 2016/05/24
     SAMPLING_INTERVAL = 5
     INTERVAL_MULTIPLIER = 60
     DATE_FORMAT = '%Y/%m/%d'

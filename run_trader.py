@@ -1,7 +1,7 @@
 # 2017/08/06
 from optparse import OptionParser
 from datetime import datetime, timedelta
-from trader import Trader
+from trader import RNNTrader
 
 if __name__ == '__main__':
     opt_parser = OptionParser()
@@ -40,6 +40,7 @@ if __name__ == '__main__':
                           help='Option to set sampling interval in minutes')
     (options, args) = opt_parser.parse_args()
 
+    """
     Trader.run(date=options.date,
                start_date=options.start_date,
                end_date=options.end_date,
@@ -47,4 +48,15 @@ if __name__ == '__main__':
                eth=options.eth,
                btc=options.btc,
                ltc=options.ltc,
-               sample_interval=options.sample_interval)    
+               sample_interval=options.sample_interval)
+    """
+    trader = RNNTrader()
+    trader.importTrainingSet()
+    trader.scaleFeatures()
+    trader.getInputsAndOutputs()
+    trader.reshape()
+    trader.compileNN(optimizer='adam', loss='mean_squared_error')
+    trader.fitToTrainingSet(batch_size = 32, epochs = 200)
+    trader.makePredictions()
+    trader.visualizeResults()
+    trader.evaluate()
