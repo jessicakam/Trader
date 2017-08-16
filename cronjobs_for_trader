@@ -1,9 +1,9 @@
 # min, hr, day, month, day of week
 
 #collect yesterday's data
-# 5 0 * * * cd ~/Desktop/Trader/; source activate ml; python collect_data.py 
+# 5 0 * * * cd ~/Desktop/Trader/; source activate ml; python collect_data.py > collect_data_log.txt 2>&1 
 
 # use yesterday's data to retrain model
-# 10 0 * * * cd ~/Desktop/Trader/; source activate ml; python run_trader.py -r
+# 10 0 * * * cd ~/Desktop/Trader/; source activate ml; python run_trader.py -r >run_trader_log.txt 2>&1
 
 # something for webapp
