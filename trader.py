@@ -145,13 +145,15 @@ class RNNTrader(RNN):
 
     def visualizeResults(self):
         print('Visualizing results')
-        plt.plot(self.real_price, color = 'red', label = 'Real ETH Price')
-        plt.plot(self.predicted_price, color = 'blue', label = 'Predicted ETH Price')
-        plt.title('ETH Price Prediction' + ' ' + self.date)
-        plt.xlabel('Time')
-        plt.ylabel('ETH Price')
-        plt.legend()
-        plt.show()
+        desired_dates_to_visualize = ['2016/05/25', '2017/01/01', '2017/06/01', '2017/08/15'] #
+        if self.date in desired_dates_to_visualize: #
+            plt.plot(self.real_price, color = 'red', label = 'Real ETH Price')
+            plt.plot(self.predicted_price, color = 'blue', label = 'Predicted ETH Price')
+            plt.title('ETH Price Prediction' + ' ' + self.date)
+            plt.xlabel('Time')
+            plt.ylabel('ETH Price')
+            plt.legend()
+            plt.show()
         
     def evaluate(self):
         print('Evaluating')

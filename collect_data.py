@@ -39,7 +39,7 @@ class CollectData():
             self.queryData()
             self.generateOutputFilename()
             self.makeFolders()
-            print('output_file: {0}'.format(self.output_file))
+            #print('output_file: {0}'.format(self.output_file))
             self.writeData()
         
     def dateStringToObject(self, date_string):
@@ -58,23 +58,26 @@ class CollectData():
             start = self.dateObjectToString(start_obj)
         
     def queryData(self):
+        print('Querying data...')
         start_str = self.dateStringToIsoString(self.date)
         next_day_obj = self.dateStringToObject(self.date) + timedelta(days=1)
         end_str = self.dateStringToIsoString(self.dateObjectToString(next_day_obj))
         self.data = self.public_client.get_product_historic_rates(self.conversion_interested_in, start=start_str, end=end_str, granularity=self.sampling_interval)
-        print('len of self.data: {0}'.format(len(self.data)))
-
-        if len(self.data) > 60*60*24 / self.sampling_interval:
-            print('got strange number of results')
-            self.data = []
+        print('len of self.data for {1}: {0}'.format(len(self.data), self.date))
         
     def writeData(self):
-        csv_header = ['time', 'low', 'high', 'open', 'close', 'volume']
-        with open(self.output_file, 'w') as f:
-            csv_writer = csv.writer(f)
-            csv_writer.writerow(csv_header)
-            for line in self.data:
-                csv_writer.writerow(line)
+        print('Writing data...')
+        # check that results seem fine
+        if len(self.data) <= 60*60*24 / self.sampling_interval and len(self.data) > 1:
+            print('results look fine for {0}'.format(self.date))
+            csv_header = ['time', 'low', 'high', 'open', 'close', 'volume']
+            with open(self.output_file, 'w') as f:
+                csv_writer = csv.writer(f)
+                csv_writer.writerow(csv_header)
+                for line in self.data:
+                    csv_writer.writerow(line)
+        else:
+            print('results DO NOT look fine for {0}'.format(self.date))
                 
     def dateStringToIsoString(self, date):
         date_obj = self.dateStringToObject(date)
