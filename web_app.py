@@ -8,6 +8,8 @@ class WebApp(RNNTrader):
         super(RNNTrader, self).__init__()
         
     def run(self):
+        ##TODO - prob remove logging
+        
         model = self.locateMostRecentModel(self, date_object):
         loaded_model = loadModel(model)
         #gather real time data
