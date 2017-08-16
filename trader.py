@@ -23,16 +23,35 @@ class RNNTrader(RNN):
     
     def __init__(self, **kwargs):
         super(RNNTrader, self).__init__()
-        today = datetime.utcnow()
-        self.start_date = today.strftime(RNNTrader.DATE_FORMAT)
-        self.end_date = today.strftime(RNNTrader.DATE_FORMAT)
+        yesterday = datetime.utcnow() - timedelta(days=1)
+        self.start_date = yesterday.strftime(RNNTrader.DATE_FORMAT)
+        self.end_date = yesterday.strftime(RNNTrader.DATE_FORMAT)
         if kwargs.get('date'):           
             self.start_date = kwargs.get('date')
             self.end_date = kwargs.get('date')
         if kwargs.get('start_date') and kwargs.get('end_date'):
             self.start_date = kwargs.get('start_date')
             self.end_date = kwargs.get('end_date')
-            
+        self.already_trained = kwargs.get('already_trained')
+        
+        print('actual start_date: {0}'.format(self.start_date))
+        print('actual end_date: {0}'.format(self.end_date))
+        print('whether or not already_trained: {0}'.format(self.already_trained))
+           
+    def run(self):
+        self.generateListDates()
+        for date in self.lst_dates:
+            self.date = date
+            print('date on: {0}'.format(self.date))
+            if not self.already_trained:
+                self.train()
+            else:
+                self.retrain()
+        
+        
+        
+        
+    """ 
     def run(self):
         self.generateListDates()
         self.already_trained = False
@@ -43,7 +62,8 @@ class RNNTrader(RNN):
                 self.train()
             else:
                 self.retrain()
-                
+    """
+    
     def train(self):
         print('Training...')
         self.findFileToImport()

@@ -102,7 +102,7 @@ if __name__ == '__main__':
     opt_parser.add_option('-d',
                          '--date',
                          dest='date',
-                         help='Specific date (YYYY/mm/dd) to collect data for, default to today, local time')
+                         help='Specific date (YYYY/mm/dd) to collect data for, default to today, local time (PST)')
     opt_parser.add_option('-s',
                           '--start_date',
                           dest='start_date',

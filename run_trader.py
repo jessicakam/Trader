@@ -9,7 +9,7 @@ if __name__ == '__main__':
     opt_parser.add_option('-d',
                          '--date',
                          dest='date',
-                         help='Specific date (YYYY/mm/dd) to run trader on')
+                         help='Specific date (YYYY/mm/dd) to run trader on, default to yesterday (PST)')
     opt_parser.add_option('-s',
                           '--start_date',
                           dest='start_date',
@@ -18,39 +18,25 @@ if __name__ == '__main__':
                           '--end_date',
                           dest='end_date',
                           help='End date if want to run on more than one day')
-    opt_parser.add_option('-a',
-                          '--account_value',
-                          dest='account_value',
-                          help='Value of theoretical account')
-    opt_parser.add_option('-E',
-                          '--eth',
-                          dest='eth',
-                          help='Number of ETH in account')
-    opt_parser.add_option('-B',
-                          '--btc',
-                          dest='btc',
-                          help='Number of BTC in account')
-    opt_parser.add_option('-l',
-                          '--ltc',
-                          dest='ltc',
-                          help='Number of LTC in account')
-    opt_parser.add_option('-i',
-                          '--sample_interval',
-                          dest='sample_interval',
-                          help='Option to set sampling interval in minutes')
+    opt_parser.add_option('-t',
+                          '--train',
+                          action='store_false',
+                          dest='already_trained',
+                          help='Use this option if initial model does not exist')
+    opt_parser.add_option('-r',
+                          '--retrain',
+                          action='store_true',
+                          dest='already_trained',
+                          help='Use this option if want to retrain an existing model with new data')
     (options, args) = opt_parser.parse_args()
+    
+    print('options: {0}'.format(options))
+    print('args: {0}'.format(args))
 
-    """
-    Trader.run(date=options.date,
-               start_date=options.start_date,
-               end_date=options.end_date,
-               account_value=options.account_value,
-               eth=options.eth,
-               btc=options.btc,
-               ltc=options.ltc,
-               sample_interval=options.sample_interval)
-    """
     trader = RNNTrader(date=options.date,
                        start_date=options.start_date,
-                       end_date=options.end_date)
+                       end_date=options.end_date,
+                       #train=options.train,
+                       #retrain=options.retrain
+                       already_trained=options.already_trained)
     trader.run()
