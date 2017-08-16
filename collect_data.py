@@ -17,13 +17,11 @@ class CollectData():
         today = datetime.utcnow()
         self.conversion_interested_in = 'ETH-USD'
         
-        #not sure
-        self.start_date = (today - timedelta(days=1)).strftime(CollectData.DATE_FORMAT)
+        self.start_date = today.strftime(CollectData.DATE_FORMAT)
         self.end_date = today.strftime(CollectData.DATE_FORMAT)
         if kwargs.get('date'):           
             self.start_date = kwargs.get('date')
-            ##not even sure
-            self.end_date = (datetime.strptime(kwargs.get('date'), CollectData.DATE_FORMAT) + timedelta(days=1)).strftime(CollectData.DATE_FORMAT)
+            self.end_date = kwargs.get('date')
         if kwargs.get('start_date') and kwargs.get('end_date'):
             self.start_date = kwargs.get('start_date')
             self.end_date = kwargs.get('end_date')
@@ -55,23 +53,18 @@ class CollectData():
         self.lst_dates = []
         while start <= end:
             self.lst_dates.append(start)
-            ##start_obj = datetime.strptime(start, CollectData.DATE_FORMAT) + timedelta(days=1)
-            ##start = datetime.strftime(start_obj, CollectData.DATE_FORMAT)
             start_obj = self.dateStringToObject(start) + timedelta(days=1)
             start = self.dateObjectToString(start_obj)
         
     def queryData(self):
-        start_str = self.dateStringToIsoString(self.date) #(self.start_date)
-        ##next_day_obj = datetime.strptime(self.date, CollectData.DATE_FORMAT) + timedelta(days=1)
+        start_str = self.dateStringToIsoString(self.date)
         next_day_obj = self.dateStringToObject(self.date) + timedelta(days=1)
-        print('next_day_obj: {0}'.format(next_day_obj))
-        #end_str = self.dateStringToIsoString(datetime.strftime(next_day_obj, CollectData.DATE_FORMAT))
         end_str = self.dateStringToIsoString(self.dateObjectToString(next_day_obj))
         self.data = self.public_client.get_product_historic_rates(self.conversion_interested_in, start=start_str, end=end_str, granularity=self.sampling_interval)
-        print('len data: {0}'.format(len(self.data)))
-        # if get strange results
+        print('len of self.data: {0}'.format(len(self.data)))
+
         if (len(self.data) * self.sampling_interval) != 60*60*24:
-            print('in if condition: {0}'.format(len(self.data) * self.sampling_interval != 60*60*24))
+            print('got strange number of results')
             self.data = []
         
     def writeData(self):
@@ -83,7 +76,6 @@ class CollectData():
                 csv_writer.writerow(line)
                 
     def dateStringToIsoString(self, date):
-        #date_obj = datetime.strptime(date, CollectData.DATE_FORMAT)
         date_obj = self.dateStringToObject(date)
         return date_obj.isoformat()
     
@@ -106,7 +98,7 @@ if __name__ == '__main__':
     opt_parser.add_option('-d',
                          '--date',
                          dest='date',
-                         help='Specific date (YYYY/mm/dd) to collect data for')
+                         help='Specific date (YYYY/mm/dd) to collect data for, default to today, local time')
     opt_parser.add_option('-s',
                           '--start_date',
                           dest='start_date',
@@ -114,7 +106,7 @@ if __name__ == '__main__':
     opt_parser.add_option('-e',
                           '--end_date',
                           dest='end_date',
-                          help='End date if want to collect for more than one day')
+                          help='End date, inclusive, if want to collect for more than one day')
     opt_parser.add_option('-i',
                           '--sampling_interval',
                           dest='sampling_interval',
