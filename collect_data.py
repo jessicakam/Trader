@@ -7,9 +7,7 @@ from optparse import OptionParser
 
 
 class CollectData():
-    #TODO
-    
-    
+
     SAMPLING_INTERVAL = 5
     INTERVAL_MULTIPLIER = 60
     DATE_FORMAT = '%Y/%m/%d'
@@ -19,11 +17,13 @@ class CollectData():
         today = datetime.utcnow()
         self.conversion_interested_in = 'ETH-USD'
         
+        #not sure
         self.start_date = (today - timedelta(days=1)).strftime(CollectData.DATE_FORMAT)
         self.end_date = today.strftime(CollectData.DATE_FORMAT)
         if kwargs.get('date'):           
             self.start_date = kwargs.get('date')
-            self.end_date = (datetime.strptime(kwargs.get('date'), CollectData.DATE_FORMAT) + timedelta(days=1)).strftime(CollectData.DATE_FORMAT)    
+            ##not even sure
+            self.end_date = (datetime.strptime(kwargs.get('date'), CollectData.DATE_FORMAT) + timedelta(days=1)).strftime(CollectData.DATE_FORMAT)
         if kwargs.get('start_date') and kwargs.get('end_date'):
             self.start_date = kwargs.get('start_date')
             self.end_date = kwargs.get('end_date')
@@ -35,13 +35,19 @@ class CollectData():
     def run(self):
         self.generateListDates()
         for date in self.lst_dates:
-            print(date)
             self.date = date
+            print('running for {0}'.format(self.date))
             self.queryData()
             self.generateOutputFilename()
             self.makeFolders()
-            print(self.output_file)
+            print('output_file: {0}'.format(self.output_file))
             self.writeData()
+        
+    def dateStringToObject(self, date_string):
+        return datetime.strptime(date_string, CollectData.DATE_FORMAT)
+        
+    def dateObjectToString(self, date_object):
+        return date_object.strftime(CollectData.DATE_FORMAT)
         
     def generateListDates(self):
         start = self.start_date
@@ -49,16 +55,21 @@ class CollectData():
         self.lst_dates = []
         while start <= end:
             self.lst_dates.append(start)
-            start_obj = datetime.strptime(start, CollectData.DATE_FORMAT) + timedelta(days=1)
-            start = datetime.strftime(start_obj, CollectData.DATE_FORMAT)
+            ##start_obj = datetime.strptime(start, CollectData.DATE_FORMAT) + timedelta(days=1)
+            ##start = datetime.strftime(start_obj, CollectData.DATE_FORMAT)
+            start_obj = self.dateStringToObject(start) + timedelta(days=1)
+            start = self.dateObjectToString(start_obj)
         
     def queryData(self):
         start_str = self.dateStringToIsoString(self.date) #(self.start_date)
-        next_day_obj = datetime.strptime(self.date, CollectData.DATE_FORMAT) + timedelta(days=1)
+        ##next_day_obj = datetime.strptime(self.date, CollectData.DATE_FORMAT) + timedelta(days=1)
+        next_day_obj = self.dateStringToObject(self.date) + timedelta(days=1)
         print('next_day_obj: {0}'.format(next_day_obj))
-        end_str = self.dateStringToIsoString(datetime.strftime(next_day_obj, CollectData.DATE_FORMAT))  #(self.end_date)
+        #end_str = self.dateStringToIsoString(datetime.strftime(next_day_obj, CollectData.DATE_FORMAT))
+        end_str = self.dateStringToIsoString(self.dateObjectToString(next_day_obj))
         self.data = self.public_client.get_product_historic_rates(self.conversion_interested_in, start=start_str, end=end_str, granularity=self.sampling_interval)
         print('len data: {0}'.format(len(self.data)))
+        # if get strange results
         if (len(self.data) * self.sampling_interval) != 60*60*24:
             print('in if condition: {0}'.format(len(self.data) * self.sampling_interval != 60*60*24))
             self.data = []
@@ -72,7 +83,8 @@ class CollectData():
                 csv_writer.writerow(line)
                 
     def dateStringToIsoString(self, date):
-        date_obj = datetime.strptime(date, CollectData.DATE_FORMAT)
+        #date_obj = datetime.strptime(date, CollectData.DATE_FORMAT)
+        date_obj = self.dateStringToObject(date)
         return date_obj.isoformat()
     
     def generateOutputFilename(self):
