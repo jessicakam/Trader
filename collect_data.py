@@ -39,7 +39,6 @@ class CollectData():
             self.queryData()
             self.generateOutputFilename()
             self.makeFolders()
-            #print('output_file: {0}'.format(self.output_file))
             self.writeData()
         
     def dateStringToObject(self, date_string):
@@ -63,7 +62,7 @@ class CollectData():
         next_day_obj = self.dateStringToObject(self.date) + timedelta(days=1)
         end_str = self.dateStringToIsoString(self.dateObjectToString(next_day_obj))
         self.data = self.public_client.get_product_historic_rates(self.conversion_interested_in, start=start_str, end=end_str, granularity=self.sampling_interval)
-        print('len of self.data for {1}: {0}'.format(len(self.data), self.date))
+        print('len of data for {1}: {0}'.format(len(self.data), self.date))
         
     def writeData(self):
         print('Writing data...')
@@ -116,9 +115,6 @@ if __name__ == '__main__':
                           dest='sampling_interval',
                           help='Option to set sampling interval in minutes')
     (options, args) = opt_parser.parse_args()
-    
-    #print("options: {0}".format(options))
-    #print("args: {0}".format(args))
     
     collect_data_obj = CollectData(date=options.date,
                                    start_date=options.start_date,

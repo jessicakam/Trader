@@ -43,60 +43,24 @@ class RNNTrader(RNN):
         for date in self.lst_dates:
             self.date = date
             print('date on: {0}'.format(self.date))
+            if self.already_trained:
+                self.loadModel()
+                self.deleteOldModel()
+            self.findFileToImport()
+            self.importTrainingSet()
+            self.scaleFeatures()
+            self.getInputsAndOutputs()
+            self.reshape()
             if not self.already_trained:
-                self.train()
-            else:
-                self.retrain()
-        
-        
-        
-        
-    """ 
-    def run(self):
-        self.generateListDates()
-        self.already_trained = False
-        for date in self.lst_dates:
-            self.date = date
-            print('date on: {0}'.format(self.date))
-            if not self.already_trained:
-                self.train()
-            else:
-                self.retrain()
-    """
-    
-    def train(self):
-        print('Training...')
-        self.findFileToImport()
-        self.importTrainingSet()
-        self.scaleFeatures()
-        self.getInputsAndOutputs()
-        self.reshape()
-        self.build()
-        self.compileNN()
-        self.fitToTrainingSet()
-        #maybe later unindent these three at the end
-        self.makePredictions()
-        self.visualizeResults()
-        self.evaluate()
-        self.saveModel()
-        
-    def retrain(self):
-        print('Retraining...')
-        self.loadModel()
-        self.findFileToImport()
-        self.importTrainingSet()
-        self.scaleFeatures()
-        self.getInputsAndOutputs()
-        self.reshape()
-        #self.build()
-        #self.compileNN()
-        self.fitToTrainingSet()
-        self.makePredictions()
-        self.visualizeResults()
-        self.evaluate()
-        self.saveModel()
-        self.deleteOldModel() #
-            
+                self.build()
+                self.compileNN()
+            self.fitToTrainingSet()
+            #maybe later unindent these three at the end
+            self.makePredictions()
+            self.visualizeResults()
+            self.evaluate()
+            self.saveModel()
+
     def findFileToImport(self):
         self.file_to_import = os.path.join('data',
                                            'eth',
@@ -221,43 +185,3 @@ class RNNTrader(RNN):
         print('Found model: {0}'.format(model_name))
         return model_name
     
-    """
-    
-    def __init__(self, **kwargs):
-        super(Trader, self).__init__()
-        
-    #def determineRecommendation(self):
-    #nah prob just act is better
-        
-    def updateWebApp(self):
-        #not sure
-        #plot
-
-    #not good for keras        
-    def pickleModel(self):
-        #not sure
-        filename = 'finalized_model.sav'
-        pickle.dump(model, open(filename, 'wb'))
-    
-    def exportWithJoblib(self):
-        # save the model to disk
-        filename = 'finalized_model.sav'
-        joblib.dump(model, filename)
-        
-    def importWithJoblib(self):
-        loaded_model = joblib.load(filename)
-        result = loaded_model.score(X_test, Y_test)
-        print(result)
-    
-    def importModel(self):
-        # load the model from disk
-        loaded_model = pickle.load(open(filename, 'rb'))
-        result = loaded_model.score(X_test, Y_test)
-        print(result)
-            
-    """
-
-
-
-
-

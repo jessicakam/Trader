@@ -29,14 +29,9 @@ if __name__ == '__main__':
                           dest='already_trained',
                           help='Use this option if want to retrain an existing model with new data')
     (options, args) = opt_parser.parse_args()
-    
-    print('options: {0}'.format(options))
-    print('args: {0}'.format(args))
 
     trader = RNNTrader(date=options.date,
                        start_date=options.start_date,
                        end_date=options.end_date,
-                       #train=options.train,
-                       #retrain=options.retrain
                        already_trained=options.already_trained)
     trader.run()
