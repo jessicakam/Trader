@@ -50,14 +50,7 @@ if __name__ == '__main__':
                ltc=options.ltc,
                sample_interval=options.sample_interval)
     """
-    trader = RNNTrader()
-    trader.importTrainingSet()
-    trader.scaleFeatures()
-    trader.getInputsAndOutputs()
-    trader.reshape()
-    trader.build()
-    trader.compileNN(optimizer='adam', loss='mean_squared_error')
-    trader.fitToTrainingSet(batch_size = 32, epochs = 200)
-    trader.makePredictions()
-    trader.visualizeResults()
-    trader.evaluate()
+    trader = RNNTrader(date=options.date,
+                       start_date=options.start_date,
+                       end_date=options.end_date)
+    trader.run()
