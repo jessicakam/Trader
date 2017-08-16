@@ -11,13 +11,14 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 from keras.layers import Dense
-from keras.layers import LSTM   
+from keras.layers import LSTM
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import MinMaxScaler
 
 class RNNTrader(RNN):
+    
     DATE_FORMAT = '%Y/%m/%d'
     
     def __init__(self, **kwargs):
@@ -34,23 +35,42 @@ class RNNTrader(RNN):
             
     def run(self):
         self.generateListDates()
+        self.already_trained = False
         for date in self.lst_dates:
             self.date = date
-            self.findFileToImport()
-            self.importTrainingSet()
-            self.scaleFeatures()
-            self.getInputsAndOutputs()
-            self.reshape()
-            self.build()
-            self.compileNN()
-            self.fitToTrainingSet()
-            #pickle/save?
-            #load?
-            #retrain?
-            #maybe unindent these three
-            self.makePredictions()
-            self.visualizeResults()
-            self.evaluate()
+            if not self.already_trained:
+                self.train()
+            else:
+                self.retrain()
+                
+    def train(self):
+        self.findFileToImport()
+        self.importTrainingSet()
+        self.scaleFeatures()
+        self.getInputsAndOutputs()
+        self.reshape()
+        self.build()
+        self.compileNN()
+        self.fitToTrainingSet()
+        #maybe later unindent these three at the end
+        self.makePredictions()
+        self.visualizeResults()
+        self.evaluate()
+        self.saveModel()
+        
+    def retrain(self):
+        self.loadModel()
+        self.findFileToImport()
+        self.importTrainingSet()
+        self.scaleFeatures()
+        self.getInputsAndOutputs()
+        self.reshape()
+        #self.build()
+        #self.compileNN()
+        self.fitToTrainingSet()
+        self.makePredictions()
+        self.visualizeResults()
+        self.evaluate()
             
     def findFileToImport(self):
         self.file_to_import = os.path.join('data',
@@ -98,11 +118,12 @@ class RNNTrader(RNN):
         
     def fitToTrainingSet(self):
         self.regressor.fit(self.X_train, self.y_train, batch_size = 32, epochs = 200)
+        self.already_trained = True ##
         
     def makePredictions(self):
         print('Making predictions...')
         # Getting the real prices for a day
-        test_set = pd.read_csv('data/eth/2017/08/01/gdax.csv')
+        test_set = pd.read_csv(self.file_to_import) #'data/eth/2017/08/01/gdax.csv')
         self.real_price = test_set.iloc[:,3:4].values
         
         # Getting the predicted prices for the day
@@ -116,7 +137,7 @@ class RNNTrader(RNN):
         print('Visualizing results')
         plt.plot(self.real_price, color = 'red', label = 'Real ETH Price')
         plt.plot(self.predicted_price, color = 'blue', label = 'Predicted ETH Price')
-        plt.title('ETH Price Prediction')
+        plt.title('ETH Price Prediction' + ' ' + self.date)
         plt.xlabel('Time')
         plt.ylabel('ETH Price')
         plt.legend()
@@ -125,6 +146,29 @@ class RNNTrader(RNN):
     def evaluate(self):
         print('Evaluating')
         self.rmse = math.sqrt(mean_squared_error(self.real_price, self.predicted_price))
+        
+    def generateModelName(self, date):
+        return os.path.join('model', date, 'RNNTrader.hd5')
+    
+    def makeFolders(self):
+        year, month, day = self.date.split('/')
+        folders = ['model', year, month, day]
+        path_so_far = ''
+        for folder in folders:
+            path_so_far = os.path.join(path_so_far, folder)
+            if not os.path.exists(path_so_far):
+                os.makedirs(path_so_far)
+    
+    def saveModel(self):
+        model_name = self.generateModelName(self.date)
+        self.makeFolders()
+        self.regressor.save(model_name)
+        del self.regressor
+        
+    def loadModel(self):
+        prev_day = datetime.strptime(self.date, RNNTrader.DATE_FORMAT) - timedelta(days=1)
+        model_name = self.generateModelName(prev_day.strftime(RNNTrader.DATE_FORMAT))
+        self.regressor = load_model(model_name)
     
     """
     
@@ -137,13 +181,6 @@ class RNNTrader(RNN):
     def updateWebApp(self):
         #not sure
         #plot
-        
-
-    def saveKerasModel(self):
-        model.save(filepath)
-        
-    def loadKerasModel(self):
-        #keras.models.load_model(filepath) to reinstantiate your model. load_model
 
     #not good for keras        
     def pickleModel(self):
@@ -167,10 +204,6 @@ class RNNTrader(RNN):
         result = loaded_model.score(X_test, Y_test)
         print(result)
             
-    ###
-    
-    
-    
     """
 
 

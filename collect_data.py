@@ -114,8 +114,8 @@ if __name__ == '__main__':
                           help='Option to set sampling interval in minutes')
     (options, args) = opt_parser.parse_args()
     
-    print("options: {0}".format(options))
-    print("args: {0}".format(args))
+    #print("options: {0}".format(options))
+    #print("args: {0}".format(args))
     
     collect_data_obj = CollectData(date=options.date,
                                    start_date=options.start_date,
