@@ -3,7 +3,7 @@ Name: Jessica Kam
 Date: 2017/07/01
 """
 from neural_networks import RNN
-import datetime, timedelta
+from datetime import datetime, timedelta
 import os
 
 import math
@@ -38,12 +38,14 @@ class RNNTrader(RNN):
         self.already_trained = False
         for date in self.lst_dates:
             self.date = date
+            print('date on: {0}'.format(self.date))
             if not self.already_trained:
                 self.train()
             else:
                 self.retrain()
                 
     def train(self):
+        print('Training...')
         self.findFileToImport()
         self.importTrainingSet()
         self.scaleFeatures()
@@ -59,6 +61,7 @@ class RNNTrader(RNN):
         self.saveModel()
         
     def retrain(self):
+        print('Retraining...')
         self.loadModel()
         self.findFileToImport()
         self.importTrainingSet()
@@ -71,6 +74,7 @@ class RNNTrader(RNN):
         self.makePredictions()
         self.visualizeResults()
         self.evaluate()
+        self.saveModel()
             
     def findFileToImport(self):
         self.file_to_import = os.path.join('data',
@@ -86,6 +90,12 @@ class RNNTrader(RNN):
             self.lst_dates.append(start)
             start_obj = self.dateStringToObject(start) + timedelta(days=1)
             start = self.dateObjectToString(start_obj)
+            
+    def dateStringToObject(self, date_string):
+        return datetime.strptime(date_string, RNNTrader.DATE_FORMAT)
+        
+    def dateObjectToString(self, date_object):
+        return date_object.strftime(RNNTrader.DATE_FORMAT)
     
     def importTrainingSet(self):
         print('Importing training set')
@@ -166,9 +176,10 @@ class RNNTrader(RNN):
         del self.regressor
         
     def loadModel(self):
-        prev_day = datetime.strptime(self.date, RNNTrader.DATE_FORMAT) - timedelta(days=1)
-        model_name = self.generateModelName(prev_day.strftime(RNNTrader.DATE_FORMAT))
+        prev_day = self.dateStringToObject(self.date) - timedelta(days=1)
+        model_name = self.generateModelName(self.dateObjectToString(prev_day))
         self.regressor = load_model(model_name)
+    
     
     """
     
