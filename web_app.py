@@ -5,12 +5,52 @@ from trader import RNNTrader
 class WebApp(RNNTrader):
     #
     def makeRecommendation(self):
-        #The price is currently ___. I predict it will be ___ in an hour. You may want to consider buy/sell if you can
-        # ... It's probably best to just hold
-        #Ooooo I foresee a good spike coming up. Go in
-        #Oooo I foresee a good dip coming up. 
-        #Squakk
-        #Eeeeeeeegret
+        #
+        
+    def generateCommentary(self):
+        commentary = ''
+        #if change is 10 percent or more,
+        #    commentary += self.generateSignificantMovementCommentary + '\n'
+        
+        funny_commentary = [
+            'I want food. FEED ME',
+            'I demand you feed me',
+            'How many times do I have to tell you? MOAR FOOD',
+            'SQUAAAAAAAAAWK',
+            'Eeeeeeeegret',
+            'Look at my plummage *puffs out chest*',
+            'WEEEEE I can fly *flap flap*'
+            'Hmmm what else do birds do?'
+            'Am I amazing or am I really amazing?',
+            "Tell me I\'m pretty",
+            'Hodl hodl hodl~ Or did I mean hold?'
+        ]
+        #how choose random item in list and add it commentary with \n
+        
+        commentary += self.generateActualPrediction() #or makeRealTimePrediction
+        
+        
+    def generateSignificantMovementCommentary(self):
+        positive_20 = [
+            'This is gonna be wild!',
+            'Ooooooh do I foresee a favorable spike?'
+        ]
+        positive_10 = [
+            'Mmmmm this is quite tasty',
+            'I am enjoying this'
+        ]
+        negative_20 = [
+            'Brace for impact!',
+            'I feel a great panic approaching'
+        ]
+        negative_10 = [
+            'This is not very pretty. And I like pretty',
+            'Move the other way please'
+        ]
+        #if else statements to choose between them
+
+    def generateActualPrediction(self):
+        #return current_price, predicted_price, percent_change each on new lines
     
     def logRecommendation(self):
         recommendation = self.makeRecommendation()
