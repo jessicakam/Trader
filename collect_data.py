@@ -55,8 +55,13 @@ class CollectData():
     def queryData(self):
         start_str = self.dateStringToIsoString(self.date) #(self.start_date)
         next_day_obj = datetime.strptime(self.date, CollectData.DATE_FORMAT) + timedelta(days=1)
+        print('next_day_obj: {0}'.format(next_day_obj))
         end_str = self.dateStringToIsoString(datetime.strftime(next_day_obj, CollectData.DATE_FORMAT))  #(self.end_date)
         self.data = self.public_client.get_product_historic_rates(self.conversion_interested_in, start=start_str, end=end_str, granularity=self.sampling_interval)
+        print('len data: {0}'.format(len(self.data)))
+        if (len(self.data) * self.sampling_interval) != 60*60*24:
+            print('in if condition: {0}'.format(len(self.data) * self.sampling_interval != 60*60*24))
+            self.data = []
         
     def writeData(self):
         csv_header = ['time', 'low', 'high', 'open', 'close', 'volume']
