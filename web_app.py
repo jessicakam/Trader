@@ -3,7 +3,10 @@
 from trader import RNNTrader
 
 class WebApp(RNNTrader):
-    #
+    
+    def __init__(self):
+        super(RNNTrader, self).__init__()
+    
     def makeRecommendation(self):
         #
         
@@ -23,7 +26,8 @@ class WebApp(RNNTrader):
             'Hmmm what else do birds do?'
             'Am I amazing or am I really amazing?',
             "Tell me I\'m pretty",
-            'Hodl hodl hodl~ Or did I mean hold?'
+            'Hodl hodl hodl~ Or did I mean hold?',
+            'Zzzzz so sleepy...'
         ]
         #how choose random item in list and add it commentary with \n
         

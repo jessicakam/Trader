@@ -23,6 +23,7 @@ class RNNTrader(RNN):
     
     def __init__(self, **kwargs):
         super(RNNTrader, self).__init__()
+        self.internal_log = 'internal_log.txt'
         yesterday = datetime.utcnow() - timedelta(days=1)
         self.start_date = yesterday.strftime(RNNTrader.DATE_FORMAT)
         self.end_date = yesterday.strftime(RNNTrader.DATE_FORMAT)
@@ -33,16 +34,16 @@ class RNNTrader(RNN):
             self.start_date = kwargs.get('start_date')
             self.end_date = kwargs.get('end_date')
         self.already_trained = kwargs.get('already_trained')
-        
-        print('actual start_date: {0}'.format(self.start_date))
-        print('actual end_date: {0}'.format(self.end_date))
-        print('whether or not already_trained: {0}'.format(self.already_trained))
-           
+    
+    def log(self, msg):
+        with open(self.internal_log, 'a') as f:
+            f.write(msg + '\n')
+            
     def run(self):
         self.generateListDates()
         for date in self.lst_dates:
             self.date = date
-            print('date on: {0}'.format(self.date))
+            self.log('Running trader for {0}'.format(self.date))
             if self.already_trained:
                 self.loadModel()
                 self.deleteOldModel()
@@ -83,22 +84,22 @@ class RNNTrader(RNN):
         return date_object.strftime(RNNTrader.DATE_FORMAT)
     
     def importTrainingSet(self):
-        print('Importing training set')
+        self.log('Importing training set')
         self.training_set = pd.read_csv(self.file_to_import) #'data/eth/2017/08/01/gdax.csv')
         self.training_set = self.training_set.iloc[:,3:4].values #1:2
         self.num_observations = len(self.training_set)
 
     def getInputsAndOutputs(self):
-        print('Getting inputs and outputs')
+        self.log('Getting inputs and outputs')
         self.X_train = self.training_set[0:self.num_observations-1] #0:23 #0:1257, files lines = 1259
         self.y_train = self.training_set[1:self.num_observations] #1:24 #1:1258
 
     def reshape(self):
-        print('Reshaping...')
+        self.log('Reshaping')
         self.X_train = np.reshape(self.X_train, (len(self.X_train), 1, 1)) #23, 1, 1 #(observations, timestamp, num_features)
         
     def build(self):
-        print('Building...')
+        self.log('Building...')
         # Initialising the RNN
         self.regressor = Sequential()
         
@@ -112,11 +113,12 @@ class RNNTrader(RNN):
         self.regressor.compile(optimizer='adam', loss='mean_squared_error')
         
     def fitToTrainingSet(self):
+        self.log('Fitting to training set')
         self.regressor.fit(self.X_train, self.y_train, batch_size = 32, epochs = 200)
         self.already_trained = True ##
         
     def makePredictions(self):
-        print('Making predictions...')
+        self.log('Making predictions')
         # Getting the real prices for a day
         test_set = pd.read_csv(self.file_to_import) #'data/eth/2017/08/01/gdax.csv')
         self.real_price = test_set.iloc[:,3:4].values
@@ -129,7 +131,7 @@ class RNNTrader(RNN):
         self.predicted_price = self.sc.inverse_transform(self.predicted_price)
 
     def visualizeResults(self):
-        print('Visualizing results')
+        self.log('Visualizing results')
         #desired_dates_to_visualize = ['2016/05/25', '2017/01/01', '2017/06/01', '2017/08/15'] #
         #if self.date in desired_dates_to_visualize: #
         plt.plot(self.real_price, color = 'red', label = 'Real ETH Price')
@@ -141,7 +143,7 @@ class RNNTrader(RNN):
         plt.show()
     
     def evaluate(self):
-        print('Evaluating')
+        self.log('Evaluating')
         self.rmse = math.sqrt(mean_squared_error(self.real_price, self.predicted_price))
         
     def generateModelName(self, date):
@@ -165,13 +167,13 @@ class RNNTrader(RNN):
         del self.regressor
         
     def loadModel(self):
-        print('Loading model...')
+        self.log('Loading model...')
         prev_day = self.dateStringToObject(self.date) - timedelta(days=1)
         model_name = self.locateMostRecentModel(prev_day)
         self.regressor = load_model(model_name)
         
     def deleteOldModel(self):
-        print('Deleting old model...')
+        self.log('Deleting old model...')
         prev_day = self.dateStringToObject(self.date) - timedelta(days=1)
         model_name = self.locateMostRecentModel(prev_day)
         os.remove(model_name)
@@ -184,6 +186,6 @@ class RNNTrader(RNN):
                 model_found = True #
             else:
                 date_object = date_object - timedelta(days=1)
-        print('Found model: {0}'.format(model_name))
+        self.log('Found: {0}'.format(model_name))
         return model_name
 
