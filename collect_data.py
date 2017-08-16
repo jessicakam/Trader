@@ -63,7 +63,7 @@ class CollectData():
         self.data = self.public_client.get_product_historic_rates(self.conversion_interested_in, start=start_str, end=end_str, granularity=self.sampling_interval)
         print('len of self.data: {0}'.format(len(self.data)))
 
-        if (len(self.data) * self.sampling_interval) != 60*60*24:
+        if len(self.data) > 60*60*24 / self.sampling_interval:
             print('got strange number of results')
             self.data = []
         
