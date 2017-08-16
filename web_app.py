@@ -6,6 +6,20 @@ class WebApp(RNNTrader):
     
     def __init__(self):
         super(RNNTrader, self).__init__()
+        
+    def run(self):
+        model = self.locateMostRecentModel(self, date_object):
+        loaded_model = loadModel(model)
+        #gather real time data
+        #make predictions on data
+        #make recommendations or generate commentary
+        
+        #later
+        #research more bots
+        #how to generate visuals - cartoon egret, blue (gradient?) triangle background
+        #sendNofications - maybe through text or Messenger
+        #graph <--veryyyy unsure about, prob not, should at least have historical predictions on webapp
+            #predictions/self.date/_graph_
     
     def makeRecommendation(self):
         #

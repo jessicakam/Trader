@@ -24,7 +24,8 @@ class RNNTrader(RNN):
     def __init__(self, **kwargs):
         super(RNNTrader, self).__init__()
         self.internal_log = 'internal_log.txt'
-        yesterday = datetime.utcnow() - timedelta(days=1)
+        self.today = datetime.utcnow()
+        yesterday = self.today - timedelta(days=1)
         self.start_date = yesterday.strftime(RNNTrader.DATE_FORMAT)
         self.end_date = yesterday.strftime(RNNTrader.DATE_FORMAT)
         if kwargs.get('date'):           
@@ -37,7 +38,7 @@ class RNNTrader(RNN):
     
     def log(self, msg):
         with open(self.internal_log, 'a') as f:
-            f.write(msg + '\n')
+            f.write('{0}: '.format(self.dateObjectToString(self.today)) + msg + '\n')
             
     def run(self):
         self.generateListDates()
