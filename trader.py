@@ -23,9 +23,9 @@ class ETHTrader(RNN):
     TRADER_TYPE = 'eth'
     DATE_FORMAT = '%Y/%m/%d'
     MODEL_FOLDER = 'models'
-    MODEL_NAME = 'RNNTrader.hd5' ##
+    MODEL_NAME = 'ETHTrader.hd5' ##
     SCALER_FOLDER = 'scaler'
-    SCALER_NAME = 'sc.save'
+    SCALER_NAME = 'ETHTrader_sc.save'
     
     def __init__(self, **kwargs):
         super(ETHTrader, self).__init__()
@@ -87,8 +87,8 @@ class ETHTrader(RNN):
     
     def importTrainingSet(self):
         print('Importing training set')
-        file_to_import = self.generateFilePath('data', self.date, 'gdax.csv')
-        self.training_set = pd.read_csv(file_to_import) #'data/eth/2017/08/01/gdax.csv')
+        self.file_to_import = self.generateFilePath('data', self.date, 'gdax.csv')
+        self.training_set = pd.read_csv(self.file_to_import) #'data/eth/2017/08/01/gdax.csv')
         self.training_set = self.training_set.iloc[:,3:4].values #1:2
         self.num_observations = len(self.training_set)
 
@@ -96,7 +96,8 @@ class ETHTrader(RNN):
         print('Scaling features')
         self.sc = MinMaxScaler()
         self.training_set = self.sc.fit_transform(self.training_set)
-        self.deleteOld(ETHTrader.SCALER_FOLDER, ETHTrader.SCALER_NAME)
+        if self.already_trained:
+            self.deleteOld(ETHTrader.SCALER_FOLDER, ETHTrader.SCALER_NAME)
         # save new scaler
         self.makeFolders(ETHTrader.SCALER_FOLDER)
         scaler_filename = self.generateFilePath(ETHTrader.SCALER_FOLDER, self.date, ETHTrader.SCALER_NAME) #os.path.join('scaler', 'eth', self.date, 'sc.save')
@@ -182,7 +183,7 @@ class ETHTrader(RNN):
     def loadModel(self):
         print('Loading model...')
         prev_day = self.dateStringToObject(self.date) - timedelta(days=1)
-        model_name = self.locateMostRecentModel(prev_day)
+        model_name = self.locateMostRecent(ETHTrader.MODEL_FOLDER, prev_day, ETHTrader.MODEL_NAME)
         self.regressor = load_model(model_name)
     
     """
@@ -209,7 +210,7 @@ class ETHTrader(RNN):
     def deleteOld(self, folder, filename):
         print('Deleting old...')
         #prev_day = self.dateStringToObject(self.date) - timedelta(days=1)
-        most_recent = self.locateMostRecent(folder, self.date, filename)
+        most_recent = self.locateMostRecent(folder, self.dateStringToObject(self.date), filename)
         os.remove(most_recent)
         
     def locateMostRecent(self, folder, date_object, filename):

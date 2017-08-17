@@ -59,7 +59,8 @@ class PricePredicter(ETHTrader):
         ##TODO - prob remove logging
         
         # every hour
-        model = self.locateMostRecent(ETHTrader.MODEL_FOLDER, self.today, ETHTrader.MODEL_NAME)
+        #print('today: {0}'.format(self.dateObjectToString(self.today)))
+        model = self.locateMostRecent(ETHTrader.MODEL_FOLDER, self.today, ETHTrader.MODEL_NAME) #self.today
         self.regressor = load_model(model)
         #self.regressor = self.loadModel(model)
         #self.loadModel()
