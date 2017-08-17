@@ -148,7 +148,7 @@ class RNNTrader(RNN):
         self.rmse = math.sqrt(mean_squared_error(self.real_price, self.predicted_price))
         
     def generateModelName(self, date):
-        return os.path.join('model', date, 'RNNTrader_refactored.hd5') #
+        return os.path.join('model', 'eth', date, 'RNNTrader_refactored.hd5') #
     
     def makeFolders(self, initial_folder):
         year, month, day = self.date.split('/')
