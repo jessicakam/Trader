@@ -16,6 +16,7 @@ from keras.layers import Dense
 from keras.layers import LSTM
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.externals import joblib
 
 class RNNTrader(RNN):
     
@@ -44,7 +45,7 @@ class RNNTrader(RNN):
         self.generateListDates()
         for date in self.lst_dates:
             self.date = date
-            self.log('Running trader for {0}'.format(self.date))
+            print('Running trader for {0}'.format(self.date))
             if self.already_trained:
                 self.loadModel()
                 self.deleteOldModel()
@@ -85,22 +86,30 @@ class RNNTrader(RNN):
         return date_object.strftime(RNNTrader.DATE_FORMAT)
     
     def importTrainingSet(self):
-        self.log('Importing training set')
+        print('Importing training set')
         self.training_set = pd.read_csv(self.file_to_import) #'data/eth/2017/08/01/gdax.csv')
         self.training_set = self.training_set.iloc[:,3:4].values #1:2
         self.num_observations = len(self.training_set)
 
+    def scaleFeatures(self):
+        self.sc = MinMaxScaler()
+        self.training_set = self.sc.fit_transform(self.training_set)
+        ##saving scaler
+        self.makeFolders('scaler')
+        scaler_filename = os.path.join('scaler', 'eth', self.date, 'sc.save')
+        joblib.dump(self.sc, scaler_filename)
+
     def getInputsAndOutputs(self):
-        self.log('Getting inputs and outputs')
+        print('Getting inputs and outputs')
         self.X_train = self.training_set[0:self.num_observations-1] #0:23 #0:1257, files lines = 1259
         self.y_train = self.training_set[1:self.num_observations] #1:24 #1:1258
 
     def reshape(self):
-        self.log('Reshaping')
+        print('Reshaping')
         self.X_train = np.reshape(self.X_train, (len(self.X_train), 1, 1)) #23, 1, 1 #(observations, timestamp, num_features)
         
     def build(self):
-        self.log('Building...')
+        print('Building...')
         # Initialising the RNN
         self.regressor = Sequential()
         
@@ -114,12 +123,12 @@ class RNNTrader(RNN):
         self.regressor.compile(optimizer='adam', loss='mean_squared_error')
         
     def fitToTrainingSet(self):
-        self.log('Fitting to training set')
+        print('Fitting to training set')
         self.regressor.fit(self.X_train, self.y_train, batch_size = 32, epochs = 200)
         self.already_trained = True ##
         
     def makePredictions(self):
-        self.log('Making predictions')
+        print('Making predictions')
         # Getting the real prices for a day
         test_set = pd.read_csv(self.file_to_import) #'data/eth/2017/08/01/gdax.csv')
         self.real_price = test_set.iloc[:,3:4].values
@@ -132,7 +141,7 @@ class RNNTrader(RNN):
         self.predicted_price = self.sc.inverse_transform(self.predicted_price)
 
     def visualizeResults(self):
-        self.log('Visualizing results')
+        print('Visualizing results')
         #desired_dates_to_visualize = ['2016/05/25', '2017/01/01', '2017/06/01', '2017/08/15'] #
         #if self.date in desired_dates_to_visualize: #
         plt.plot(self.real_price, color = 'red', label = 'Real ETH Price')
@@ -144,15 +153,15 @@ class RNNTrader(RNN):
         plt.show()
     
     def evaluate(self):
-        self.log('Evaluating')
+        print('Evaluating')
         self.rmse = math.sqrt(mean_squared_error(self.real_price, self.predicted_price))
         
     def generateModelName(self, date):
-        return os.path.join('model', 'eth', date, 'RNNTrader_refactored.hd5') #
+        return os.path.join('models', 'eth', date, 'RNNTrader.hd5') #
     
     def makeFolders(self, initial_folder):
         year, month, day = self.date.split('/')
-        folders = [year, month, day] #model
+        folders = ['eth', year, month, day] #model
         if not os.path.exists(initial_folder):
             os.makedirs(initial_folder)
         path_so_far = initial_folder
@@ -168,13 +177,13 @@ class RNNTrader(RNN):
         del self.regressor
         
     def loadModel(self):
-        self.log('Loading model...')
+        print('Loading model...')
         prev_day = self.dateStringToObject(self.date) - timedelta(days=1)
         model_name = self.locateMostRecentModel(prev_day)
         self.regressor = load_model(model_name)
         
     def deleteOldModel(self):
-        self.log('Deleting old model...')
+        print('Deleting old model...')
         prev_day = self.dateStringToObject(self.date) - timedelta(days=1)
         model_name = self.locateMostRecentModel(prev_day)
         os.remove(model_name)
@@ -187,6 +196,6 @@ class RNNTrader(RNN):
                 model_found = True #
             else:
                 date_object = date_object - timedelta(days=1)
-        self.log('Found: {0}'.format(model_name))
+        print('Found: {0}'.format(model_name))
         return model_name
 
