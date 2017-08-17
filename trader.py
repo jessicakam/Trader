@@ -48,7 +48,7 @@ class ETHTrader(RNN):
             print('Running trader for {0}'.format(self.date))
             if self.already_trained:
                 self.loadModel()
-                self.deleteOldModel()
+                self.deleteOld(ETHTrader.MODEL_FOLDER, ETHTrader.MODEL_NAME) #folder, filename
             #self.findFileToImport()
             self.importTrainingSet()
             self.scaleFeatures()
@@ -96,7 +96,8 @@ class ETHTrader(RNN):
         print('Scaling features')
         self.sc = MinMaxScaler()
         self.training_set = self.sc.fit_transform(self.training_set)
-        # save scaler
+        self.deleteOld(ETHTrader.SCALER_FOLDER, ETHTrader.SCALER_NAME)
+        # save new scaler
         self.makeFolders(ETHTrader.SCALER_FOLDER)
         scaler_filename = self.generateFilePath(ETHTrader.SCALER_FOLDER, self.date, ETHTrader.SCALER_NAME) #os.path.join('scaler', 'eth', self.date, 'sc.save')
         joblib.dump(self.sc, scaler_filename)
@@ -183,10 +184,11 @@ class ETHTrader(RNN):
         prev_day = self.dateStringToObject(self.date) - timedelta(days=1)
         model_name = self.locateMostRecentModel(prev_day)
         self.regressor = load_model(model_name)
-        
+    
+    """
     def deleteOldModel(self):
         print('Deleting old model...')
-        prev_day = self.dateStringToObject(self.date) - timedelta(days=1)
+        prev_day = self.dateStringToObject(self.date) - timedelta(days=1) ##this line prob not necessary
         model_name = self.locateMostRecentModel(prev_day)
         os.remove(model_name)
         
@@ -202,4 +204,23 @@ class ETHTrader(RNN):
                 date_object = date_object - timedelta(days=1)
         print('Model located: {0}'.format(model_name))
         return model_name
+    
+    """
+    def deleteOld(self, folder, filename):
+        print('Deleting old...')
+        #prev_day = self.dateStringToObject(self.date) - timedelta(days=1)
+        most_recent = self.locateMostRecent(folder, self.date, filename)
+        os.remove(most_recent)
+        
+    def locateMostRecent(self, folder, date_object, filename):
+        found = False #
+        while not found:    
+            #model_name = self.generateModelName(self.dateObjectToString(date_object))
+            most_recent = self.generateFilePath(folder, self.dateObjectToString(date_object), filename)
+            if os.path.isfile(most_recent):
+                found = True #
+            else:
+                date_object = date_object - timedelta(days=1)
+        print('Located: {0}'.format(most_recent))
+        return most_recent
 

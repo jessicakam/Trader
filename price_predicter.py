@@ -59,7 +59,7 @@ class PricePredicter(ETHTrader):
         ##TODO - prob remove logging
         
         # every hour
-        model = self.locateMostRecentModel(self.today)
+        model = self.locateMostRecent(ETHTrader.MODEL_FOLDER, self.today, ETHTrader.MODEL_NAME)
         self.regressor = load_model(model)
         #self.regressor = self.loadModel(model)
         #self.loadModel()
@@ -103,7 +103,7 @@ class PricePredicter(ETHTrader):
         #joblib.dump(scaler, scaler_filename) 
         
         # And now to load...
-        scaler_filename = 'scaler/eth/2017/08/15/sc.save'
+        scaler_filename = self.locateMostRecent(ETHTrader.SCALER_FOLDER, self.date, ETHTrader.SCALER_NAME) #'scaler/eth/2017/08/15/sc.save'
         self.sc = joblib.load(scaler_filename) 
         
         #self.sc = MinMaxScaler()
