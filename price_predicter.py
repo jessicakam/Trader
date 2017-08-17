@@ -1,20 +1,26 @@
 # 2017/08/06
 
-from trader import RNNTrader
-from datetime import datetime
+from trader import ETHTrader
+from datetime import datetime, timedelta
 import gdax
 import os
 import random
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler  
 from sklearn.externals import joblib
+from keras.models import load_model
 
-class PricePredicter(RNNTrader):
+class PricePredicter(ETHTrader):
+    
+    PREDICTION_FOLDER = 'predictions'
+    PREDICTION_FILENAME = 'predictions.txt'
     
     def __init__(self):
-        super(RNNTrader, self).__init__()
-        self.today = datetime.utcnow()
-        self.date = self.dateObjectToString(self.today)
+        super(PricePredicter, self).__init__()
+        #self.today = datetime.utcnow()
+        #self.date = self.dateObjectToString(self.today)
+        #print("self.date: {0}".format(self.date))
+        self.date = datetime.today() #.strftime(ETHTrader.DATE_FORMAT)
         self.public_client = gdax.PublicClient()
         
         self.positive_20 = [
@@ -53,15 +59,16 @@ class PricePredicter(RNNTrader):
         ##TODO - prob remove logging
         
         # every hour
-        #model = self.locateMostRecentModel(self.today)
+        model = self.locateMostRecentModel(self.today)
+        self.regressor = load_model(model)
         #self.regressor = self.loadModel(model)
-        self.loadModel()
+        #self.loadModel()
         self.gatherRealTimeData()
         self.makeAPrediction()
         self.makeRecommendation()
         #self.generateCommentary()
         #self.log(self.commentary)
-        self.logPrediction()
+        self.recordPrediction()
         
         #make recommendations or generate commentary
         
@@ -77,8 +84,9 @@ class PricePredicter(RNNTrader):
         order_book = self.public_client.get_product_order_book('ETH-USD', level=1)
         self.current_ask = float(order_book['asks'][0][0]) #correct data type?
         self.current_bid = float(order_book['bids'][0][0])
-        self.current_price = np.array([(self.current_ask + self.current_bid) / 2])
-        print('Current Price: {0}'.format(self.current_price))
+        self._current_price = round((self.current_ask + self.current_bid) / 2, 2)
+        self.current_price = np.array([self._current_price])
+        print('Current Price: {0}'.format(self._current_price))
             
     def makeAPrediction(self):
         print('Predicting a single price')
@@ -106,7 +114,8 @@ class PricePredicter(RNNTrader):
         self.current_price = np.reshape(self.current_price, (1, 1, 1)) #24, 1, 1
         self.predicted_price = self.regressor.predict(self.current_price) #prediction work without transform???
         self.predicted_price = self.sc.inverse_transform(self.predicted_price)
-        print('predicted price: {0}'.format(self.predicted_price)) 
+        self._predicted_price = round(self.predicted_price[0][0] / 100 * 100, 2)
+        print('predicted price: {0}'.format(self._predicted_price)) 
         
         
         """
@@ -124,37 +133,38 @@ class PricePredicter(RNNTrader):
         
     def makeRecommendation(self):
         self.commentary = ''
-        self.change = self.predicted_price - self.current_price
-        self.percent_change = self.change / self.current_price
-        if self.percent_change >= 1.1 or self.percent_change <= 0.9:
-            self.commentary += self.generateSignificantMovementCommentary() + '\n'
+        self.change = round(self._predicted_price - self._current_price, 2)
+        self.percent_change = round(self.change / self._current_price * 100, 2)
+        if self.percent_change >= 10 or self.percent_change <= -10:
+            self.commentary += self.generateSignificantMovementCommentary()
         #how choose random item in list and add it commentary with \n
-        self.commentary += self.selectRandomlyFromList(self.general_funny_commentary) + '\n'
+        self.commentary += self.selectRandomlyFromList(self.general_funny_commentary)
         self.commentary += self.includeActualPrediction() + '\n'
         
     def generateSignificantMovementCommentary(self):
-        if self.percent_change >= 1.2:
+        if self.percent_change >= 20:
             return self.selectRandomlyFromList(self.positive_20)
-        elif self.percent_change >= 1.1:
+        elif self.percent_change >= 10:
             return self.selectRandomlyFromList(self.positive_10)
-        elif self.percent_change <= 0.8:
+        elif self.percent_change <= -20:
             return self.selectRandomlyFromList(self.negative_20)
         else:
             return self.selectRandomlyFromList(self.negative_10)
         
     def selectRandomlyFromList(self, lst):
-        return random.choice(lst)
+        return random.choice(lst) + '\n'
         
     def includeActualPrediction(self):
-        return 'Current Price: {0}, Predicted Price: {1}, Predicted Change: {2}, {3}%'.format(self.current_price, self.predicted_price, self.change, self.percent_change)
+        return '(Current Price: {0} \n Predicted Price: {1} \n Predicted Change: {2}($), {3}%) \n'.format(self._current_price, self._predicted_price, self.change, self.percent_change)
     
-    def generateLogFileName(self):
-        return os.path.join('logs', 'eth', self.dateObjectToString(self.today), 'predictions.txt') #            
+    #def generateLogFileName(self):
+    #    return os.path.join('logs', 'eth', self.dateObjectToString(self.today), 'predictions.txt') #            
     
-    def logPrediction(self):
-        self.makeFolders('logs')
-        log_file = self.generateLogFileName()
-        with open(log_file, 'a') as f:
+    def recordPrediction(self):
+        self.date = self.dateObjectToString(self.date)
+        self.makeFolders(PricePredicter.PREDICTION_FOLDER)
+        prediction_file = self.generateFilePath(PricePredicter.PREDICTION_FOLDER, self.date, PricePredicter.PREDICTION_FILENAME) #self.generateLogFileName()
+        with open(prediction_file, 'a') as f:
             f.write(self.commentary)
         
 

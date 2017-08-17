@@ -14,13 +14,12 @@ class CollectData():
     DATE_FORMAT = '%Y/%m/%d'
     
     def __init__(self, **kwargs):
-        self.internal_log = 'internal_log.txt'
         self.public_client = gdax.PublicClient()
-        today = datetime.utcnow()
+        yesterday = datetime.utcnow() - timedelta(days=1)
         self.conversion_interested_in = 'ETH-USD'
         
-        self.start_date = today.strftime(CollectData.DATE_FORMAT)
-        self.end_date = today.strftime(CollectData.DATE_FORMAT)
+        self.start_date = yesterday.strftime(CollectData.DATE_FORMAT)
+        self.end_date = yesterday.strftime(CollectData.DATE_FORMAT)
         if kwargs.get('date'):           
             self.start_date = kwargs.get('date')
             self.end_date = kwargs.get('date')
@@ -36,7 +35,7 @@ class CollectData():
         self.generateListDates()
         for date in self.lst_dates:
             self.date = date
-            self.log('Collecting data for {0}'.format(self.date))
+            print('Collecting data for {0}'.format(self.date))
             self.queryData()
             self.generateOutputFilename()
             self.makeFolders()
@@ -58,15 +57,15 @@ class CollectData():
             start = self.dateObjectToString(start_obj)
         
     def queryData(self):
-        self.log('Querying data...')
+        print('Querying data...')
         start_str = self.dateStringToIsoString(self.date)
         next_day_obj = self.dateStringToObject(self.date) + timedelta(days=1)
         end_str = self.dateStringToIsoString(self.dateObjectToString(next_day_obj))
         self.data = self.public_client.get_product_historic_rates(self.conversion_interested_in, start=start_str, end=end_str, granularity=self.sampling_interval)
-        self.log('Length of data for {1}: {0}'.format(len(self.data), self.date))
+        print('Length of data for {1}: {0}'.format(len(self.data), self.date))
         
     def writeData(self):
-        self.log('Writing data...')
+        print('Writing data...')
         # check that results seem fine
         if len(self.data) <= 60*60*24 / self.sampling_interval and len(self.data) > 1:
             csv_header = ['time', 'low', 'high', 'open', 'close', 'volume']
@@ -75,9 +74,9 @@ class CollectData():
                 csv_writer.writerow(csv_header)
                 for line in self.data:
                     csv_writer.writerow(line)
-            self.log('Successfully collected data for {0}'.format(self.date))
+            print('SUCCESSFULLY collected data for {0} \n'.format(self.date))
         else:
-            self.log('Failed to collect data for {0}'.format(self.date))
+            print('FAILED to collect data for {0} \n'.format(self.date))
                 
     def dateStringToIsoString(self, date):
         date_obj = self.dateStringToObject(date)
@@ -96,10 +95,6 @@ class CollectData():
             path_so_far = os.path.join(path_so_far, folder)
             if not os.path.exists(path_so_far):
                 os.makedirs(path_so_far)
-    
-    def log(self, msg):
-        with open(self.internal_log, 'a') as f:
-            f.write(msg + '\n')
     
 if __name__ == '__main__':
     opt_parser = OptionParser()

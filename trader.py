@@ -18,17 +18,21 @@ from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.externals import joblib
 
-class RNNTrader(RNN):
+class ETHTrader(RNN):
     
+    TRADER_TYPE = 'eth'
     DATE_FORMAT = '%Y/%m/%d'
+    MODEL_FOLDER = 'models'
+    MODEL_NAME = 'RNNTrader.hd5' ##
+    SCALER_FOLDER = 'scaler'
+    SCALER_NAME = 'sc.save'
     
     def __init__(self, **kwargs):
-        super(RNNTrader, self).__init__()
-        self.internal_log = 'internal_log.txt'
+        super(ETHTrader, self).__init__()
         self.today = datetime.utcnow()
-        yesterday = self.today - timedelta(days=1)
-        self.start_date = yesterday.strftime(RNNTrader.DATE_FORMAT)
-        self.end_date = yesterday.strftime(RNNTrader.DATE_FORMAT)
+        self.yesterday = self.today - timedelta(days=1)
+        self.start_date = self.yesterday.strftime(ETHTrader.DATE_FORMAT)
+        self.end_date = self.yesterday.strftime(ETHTrader.DATE_FORMAT)
         if kwargs.get('date'):           
             self.start_date = kwargs.get('date')
             self.end_date = kwargs.get('date')
@@ -36,11 +40,7 @@ class RNNTrader(RNN):
             self.start_date = kwargs.get('start_date')
             self.end_date = kwargs.get('end_date')
         self.already_trained = kwargs.get('already_trained')
-    
-    def log(self, msg):
-        with open(self.internal_log, 'a') as f:
-            f.write('{0}: '.format(self.dateObjectToString(self.today)) + msg + '\n')
-            
+                
     def run(self):
         self.generateListDates()
         for date in self.lst_dates:
@@ -49,7 +49,7 @@ class RNNTrader(RNN):
             if self.already_trained:
                 self.loadModel()
                 self.deleteOldModel()
-            self.findFileToImport()
+            #self.findFileToImport()
             self.importTrainingSet()
             self.scaleFeatures()
             self.getInputsAndOutputs()
@@ -64,12 +64,12 @@ class RNNTrader(RNN):
             self.evaluate()
             self.saveModel()
 
-    def findFileToImport(self):
-        self.file_to_import = os.path.join('data',
-                                           'eth',
-                                           self.date,
-                                           'gdax.csv')
-            
+    #def findFileToImport(self):
+    #    self.file_to_import = self.generateFilePath('data', 'gdax.csv')
+        
+    def generateFilePath(self, folder, date, filename):
+        return os.path.join(folder, ETHTrader.TRADER_TYPE, date, filename)
+    
     def generateListDates(self):
         start = self.start_date
         end = self.end_date
@@ -80,23 +80,25 @@ class RNNTrader(RNN):
             start = self.dateObjectToString(start_obj)
             
     def dateStringToObject(self, date_string):
-        return datetime.strptime(date_string, RNNTrader.DATE_FORMAT)
+        return datetime.strptime(date_string, ETHTrader.DATE_FORMAT)
         
     def dateObjectToString(self, date_object):
-        return date_object.strftime(RNNTrader.DATE_FORMAT)
+        return date_object.strftime(ETHTrader.DATE_FORMAT)
     
     def importTrainingSet(self):
         print('Importing training set')
-        self.training_set = pd.read_csv(self.file_to_import) #'data/eth/2017/08/01/gdax.csv')
+        file_to_import = self.generateFilePath('data', self.date, 'gdax.csv')
+        self.training_set = pd.read_csv(file_to_import) #'data/eth/2017/08/01/gdax.csv')
         self.training_set = self.training_set.iloc[:,3:4].values #1:2
         self.num_observations = len(self.training_set)
 
     def scaleFeatures(self):
+        print('Scaling features')
         self.sc = MinMaxScaler()
         self.training_set = self.sc.fit_transform(self.training_set)
-        ##saving scaler
-        self.makeFolders('scaler')
-        scaler_filename = os.path.join('scaler', 'eth', self.date, 'sc.save')
+        # save scaler
+        self.makeFolders(ETHTrader.SCALER_FOLDER)
+        scaler_filename = self.generateFilePath(ETHTrader.SCALER_FOLDER, self.date, ETHTrader.SCALER_NAME) #os.path.join('scaler', 'eth', self.date, 'sc.save')
         joblib.dump(self.sc, scaler_filename)
 
     def getInputsAndOutputs(self):
@@ -156,12 +158,12 @@ class RNNTrader(RNN):
         print('Evaluating')
         self.rmse = math.sqrt(mean_squared_error(self.real_price, self.predicted_price))
         
-    def generateModelName(self, date):
-        return os.path.join('models', 'eth', date, 'RNNTrader_testing_sc.hd5') #
+    #def generateModelName(self, date):
+    #    return os.path.join('models', 'eth', date, 'RNNTrader.hd5')#'RNNTrader_testing_sc.hd5') #
     
     def makeFolders(self, initial_folder):
         year, month, day = self.date.split('/')
-        folders = ['eth', year, month, day] #model
+        folders = [ETHTrader.TRADER_TYPE, year, month, day] #model
         if not os.path.exists(initial_folder):
             os.makedirs(initial_folder)
         path_so_far = initial_folder
@@ -171,8 +173,8 @@ class RNNTrader(RNN):
                 os.makedirs(path_so_far)
     
     def saveModel(self):
-        model_name = self.generateModelName(self.date)
-        self.makeFolders('model')
+        model_name = self.generateFilePath(ETHTrader.MODEL_FOLDER, self.date, ETHTrader.MODEL_NAME) #self.generateModelName(self.date)
+        self.makeFolders(ETHTrader.MODEL_FOLDER)
         self.regressor.save(model_name)
         del self.regressor
         
@@ -191,11 +193,13 @@ class RNNTrader(RNN):
     def locateMostRecentModel(self, date_object):
         model_found = False #
         while not model_found:    
-            model_name = self.generateModelName(self.dateObjectToString(date_object))
+            #model_name = self.generateModelName(self.dateObjectToString(date_object))
+            model_name = self.generateFilePath(ETHTrader.MODEL_FOLDER, self.dateObjectToString(date_object), ETHTrader.MODEL_NAME)
+            print("model_name: {0}".format(model_name))
             if os.path.isfile(model_name):
                 model_found = True #
             else:
                 date_object = date_object - timedelta(days=1)
-        print('Found: {0}'.format(model_name))
+        print('Model located: {0}'.format(model_name))
         return model_name
 

@@ -1,11 +1,11 @@
 # min, hr, day, month, day of week
 
 # collect yesterday's data
-# 5 0 * * * cd ~/Desktop/Trader/; source activate ml; python collect_data.py > cronjobs_log.txt 2>&1 
+# 5 0 * * * cd ~/Desktop/Trader/; source activate ml; python collect_data.py -i 60 >> cronjobs_log.txt 2>&1 
 
 # use yesterday's data to retrain model
-# 10 0 * * * cd ~/Desktop/Trader/; source activate ml; python run_trader.py -r >cronjobs_log.txt 2>&1
+# 10 0 * * * cd ~/Desktop/Trader/; source activate ml; python run_trader.py -r >> cronjobs_log.txt 2>&1
 
 # predict prices hourly
-# 0 * * * * cd /Desktop/Trader/; source activate ml; python predict_prices.py > cronjobs_lob.txt 2>&1
+# 0 * * * * cd /Desktop/Trader/; source activate ml; python predict_prices.py >> cronjobs_log.txt 2>&1
 

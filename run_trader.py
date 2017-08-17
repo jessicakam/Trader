@@ -1,7 +1,7 @@
 # 2017/08/06
 from optparse import OptionParser
 from datetime import datetime, timedelta
-from trader import RNNTrader
+from trader import ETHTrader
 
 if __name__ == '__main__':
     opt_parser = OptionParser()
@@ -9,7 +9,7 @@ if __name__ == '__main__':
     opt_parser.add_option('-d',
                          '--date',
                          dest='date',
-                         help='Specific date (YYYY/mm/dd) to run trader on, default to yesterday (PST)')
+                         help='Specific date (YYYY/mm/dd) to run trader on, default to yesterday')
     opt_parser.add_option('-s',
                           '--start_date',
                           dest='start_date',
@@ -30,7 +30,7 @@ if __name__ == '__main__':
                           help='Use this option if want to retrain an existing model with new data')
     (options, args) = opt_parser.parse_args()
 
-    trader = RNNTrader(date=options.date,
+    trader = ETHTrader(date=options.date,
                        start_date=options.start_date,
                        end_date=options.end_date,
                        already_trained=options.already_trained)
