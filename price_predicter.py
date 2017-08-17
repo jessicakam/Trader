@@ -90,9 +90,9 @@ class PricePredicter(RNNTrader):
         #inputs = self.real_price
         #inputs = self.sc.transform(inputs)
         
-        from sklearn.externals import joblib
-        scaler_filename = "scaler.save"
-        joblib.dump(scaler, scaler_filename) 
+        #from sklearn.externals import joblib
+        #scaler_filename = "scaler.save"
+        #joblib.dump(scaler, scaler_filename) 
         
         # And now to load...
         scaler_filename = 'scaler/eth/2017/08/15/sc.save'
@@ -102,7 +102,7 @@ class PricePredicter(RNNTrader):
         #scaled = self.sc.fit_transform(np.array([self.current_ask, self.current_bid]).reshape(-1,1))
         #print('scaled: {0}'.format(scaled))
         
-        self.current_price = self.sc.transform(self.current_price) ##
+        self.current_price = self.sc.transform(self.current_price.reshape(-1, 1)) ##
         self.current_price = np.reshape(self.current_price, (1, 1, 1)) #24, 1, 1
         self.predicted_price = self.regressor.predict(self.current_price) #prediction work without transform???
         self.predicted_price = self.sc.inverse_transform(self.predicted_price)
