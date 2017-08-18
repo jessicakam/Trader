@@ -12,10 +12,28 @@
       text-align: center;
       font-size: 0;
     }
+
+  .parent {
+    position: relative;
+    top: 0;
+    left: 0;
+  }
+  .image1 {
+    position: relative;
+  }
+  .image2 {
+    position: absolute;
+  }
+  .center-block {
+    margin-left: auto;
+    margin-right: auto;
+    width: 10em;
+    z-index: 100;
+    position: relative;
+  }
     </style>
   </head>
   <body>
-  <h1> HELLLOOOOOO </h1>
   <script src="trianglify.min.js"></script>
   <script>
   // set up the base pattern
@@ -37,7 +55,14 @@
   // png
   var png = document.createElement('img')
   png.src = pattern.png()
-  document.body.appendChild(png)
+  //document.body.appendChild(png)
+  document.body.style['background-image'] = 'url(' + pattern.png() + ')'
   </script>
+  <div class='center-block'>
+    <h1> HELLLOOOOOO </h1>
+    <p> why isn't text appearing GAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH </p>
+    <img src = 'egret2.png'>
+
+  </div>
   </body>
 </html>
