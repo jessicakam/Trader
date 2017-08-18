@@ -6,64 +6,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Trianglify basic example</title>
     <style>
-    html, body {
-      margin: 0 0;
-      padding: 0 0;
-      text-align: center;
-      font-size: 0;
+	table.prediction-table td {
+		padding: 10px;		
+		border: 1px solid black;
+		text-align: center;
+	}
+    .center-part {
+        margin-left: auto;
+        margin-right: auto;
     }
-
-  .parent {
-    position: relative;
-    top: 0;
-    left: 0;
-  }
-  .image1 {
-    position: relative;
-  }
-  .image2 {
-    position: absolute;
-  }
-  .center-block {
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 5%;
-    z-index: 100;
-    position: relative;
-  }
     </style>
   </head>
   <body>
-  <script src="trianglify.min.js"></script>
-  <script>
-  // set up the base pattern
-  var pattern = Trianglify({
-    height: window.innerHeight,
-    width: window.innerWidth,
-    //cell_size: 30 + Math.random() * 100,
-    variance: 0.5,
-    cell_size: 70,
-    x_colors: 'Blues'
-  })
+    <div>
+    <img src = 'egret5.png'>
+    <table class="prediction-table">
+            <tr>
+              <td>Field</td>
+             <td>Value</td>
+            </tr>
 
-  // canvas
-  //document.body.appendChild(pattern.canvas())
+            <tr>
+              <td>Last updated</td>
+             <td>TIME</td>
+            </tr>
 
-  // svg
-  //document.body.appendChild(pattern.svg())
+            <tr>
+              <td>Current Price</td>
+              <td>$X</td>
+            </tr>
 
-  // png
-  var png = document.createElement('img')
-  png.src = pattern.png()
-  //document.body.appendChild(png)
-  document.body.style['background-image'] = 'url(' + pattern.png() + ')'
-  </script>
-  <div class='center-block'>
-    <h1> HELLLOOOOOO </h1>
-    <p> why isn't text appearing GAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH </p>
-    <img src = 'egret2.png'>
- <div id="list"><p><iframe src="predictions.html" width=200 height=400 frameborder=0 ></iframe></p></div>
-
-  </div>
+            <tr>
+              <td>Predicted Price</td>
+              <td>$Y</td>
+            </tr>
+    </table>
+    </div>
   </body>
 </html>
