@@ -167,7 +167,9 @@ class PricePredicter(ETHTrader):
         prediction_file = self.generateFilePath(PricePredicter.PREDICTION_FOLDER, self.date, PricePredicter.PREDICTION_FILENAME) #self.generateLogFileName()
         with open(prediction_file, 'a') as f:
             f.write(self.commentary)
-        
+        # also write to a file for messages
+        with open(PricePredicter.PREDICTION_FILENAME, 'w') as f:
+            f.write(self.commentary)
 
 if __name__ == '__main__':
     """

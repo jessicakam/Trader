@@ -1,28 +1,61 @@
-# /usr/bin/env python
-
 import twilio_secrets as ts
 
-import requests
-from requests.auth import HTTPBasicAuth
+import re
 from twilio.rest import Client
 
-# Find these values at https://twilio.com/user/account
-account_sid = ts.ACCOUNT_SID #'AC1e840b5654d8c87fbf2eff3264cd5007' #ts.ACCOUNT_SID
-auth_token = ts.AUTH_TOKEN #'01f9ab14e8b8a6aa0e769eb00ec4c9f8' #ts.AUTH_TOKEN
-SEND_FROM = '+16266843715' #'+15005550006' #ts.PHONE_NUMBER #'+16268251248'
-SEND_TO = '+16268251248' #'+5104802511'
+class TwilioMessenger():
 
-print(account_sid)
-print(auth_token)
-print(SEND_FROM)
-print(SEND_TO)
+    def __init__(self):
+        self.account_sid = ts.ACCOUNT_SID
+        self.auth_token = ts.AUTH_TOKEN
+        self.SEND_FROM = ts.PHONE_NUMBER 
+        self.SEND_TO = ''
+        self.client = Client(self.account_sid, self.auth_token)
 
-#r = requests.get('https://api.github.com/user', auth=HTTPBasicAuth('user', 'pass'))
-#r = requests.get('https://api.gi', auth=HTTPBasicAuth('user', 'pass'))
-#print('r status code: {0}'.format(r.status_code))
+    def run(self):
+        self.getNumbers()
+        self.getMsg()
+        for number in self.numbers:
+            self.SEND_TO = number
+            self.sendMsg()
 
-client = Client(account_sid, auth_token)
+    def getNumbers(self):
+       self.numbers = []
+       with open('phone_numbers.txt', 'r') as f:
+            for line in f:
+                parsed_number = self.parseNumber(line)
+                if parsed_number:
+                    self.numbers.append(parsed_number)
 
-message = client.api.account.messages.create(to=SEND_TO,
-                                             from_= SEND_FROM,
-                                             body="WAKE UP BIETCH (w/o 1)")
+    def parseNumber(self, line):
+        number = ''
+        pattern = '(.)*(\d{3})(.)*(\d{3})(.)*(\d{4})'
+        phone_pattern = re.compile(pattern)
+        results = phone_pattern.search(line)
+        if results:
+            results = results.groups()
+            p1 = results[1]
+            p2 = results[3]
+            p3 = results[5]
+        if results and p1 and p2 and p3:
+            number = p1 + p2 + p3
+        if number:
+            return '+1' + number
+        print('Number not valid')
+        return ''
+
+    def getMsg(self):
+        self.msg = ''
+        with open('predictions.txt', 'r') as f:
+            for line in f:
+                self.msg = self.msg + line + ' '
+
+    def sendMsg(self):
+        self.client.api.account.messages.create(to=self.SEND_TO,
+                                           from_= self.SEND_FROM,
+                                           body=self.msg)
+        print('Sent msg to {0}'.format(self.SEND_TO))
+
+if __name__=='__main__':
+    tw = TwilioMessenger()
+    tw.run()

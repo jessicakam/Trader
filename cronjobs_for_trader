@@ -6,6 +6,6 @@
 # use yesterday's data to retrain model
 # 10 0 * * * cd ~/Desktop/Trader/; source activate ml; python run_trader.py -r >> cronjobs_log.txt 2>&1
 
-# predict prices hourly
-# 0 * * * * cd /Desktop/Trader/; source activate ml; python predict_prices.py >> cronjobs_log.txt 2>&1
+# predict prices hourly and send notifications
+# 0 * * * * cd /Desktop/Trader/; source activate ml; python predict_prices.py >> cronjobs_log.txt 2>&1; python send_sms.py >> cronjobs_log.txt 2>&1
 
