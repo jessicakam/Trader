@@ -20,15 +20,15 @@ class PricePredicter(ETHTrader):
         self.date = datetime.today()
         self.public_client = gdax.PublicClient()
         
-        self.positive_20 = [
+        self.positive_10 = [
             'This is gonna be wild!',
             'Ooooooh do I foresee a favorable spike?'
         ]
-        self.positive_10 = [
+        self.positive_5 = [
             'Mmmmm this is quite tasty',
             'I am enjoying this'
         ]
-        self.negative_20 = [
+        self.negative_5 = [
             'GAHHHH! Brace for impact!',
             'I feel a great panic approaching'
         ]
@@ -84,21 +84,21 @@ class PricePredicter(ETHTrader):
         self.commentary = ''
         self.change = round(self._predicted_price - self._current_price, 2)
         self.percent_change = round(self.change / self._current_price * 100, 2)
-        if self.percent_change >= 10 or self.percent_change <= -10:
+        if self.percent_change >= 5 or self.percent_change <= -5:
             self.commentary += self.generateSignificantMovementCommentary()
         else:
-            self.commentary += self.selectRandomlyFromList(self.general_funny_commentary)
+            self.commentary += self.selectRandomlyFromList(self.general_funny_commentary) + ' '
         self.commentary += self.includeActualPrediction() + '\n'
         
     def generateSignificantMovementCommentary(self):
-        if self.percent_change >= 20:
-            return self.selectRandomlyFromList(self.positive_20)
-        elif self.percent_change >= 10:
+        if self.percent_change >= 10:
             return self.selectRandomlyFromList(self.positive_10)
-        elif self.percent_change <= -20:
-            return self.selectRandomlyFromList(self.negative_20)
-        else:
+        elif self.percent_change >= 5:
+            return self.selectRandomlyFromList(self.positive_5)
+        elif self.percent_change <= -10:
             return self.selectRandomlyFromList(self.negative_10)
+        else:
+            return self.selectRandomlyFromList(self.negative_5)
         
     def selectRandomlyFromList(self, lst):
         return random.choice(lst) + '\n'
