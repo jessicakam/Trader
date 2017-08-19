@@ -129,8 +129,8 @@ class ETHTrader(RNN):
         
     def makePredictions(self):
         print('Making predictions')
-        next_day = self.dateObjectToString(self.dateStringToObject(self.date) + timedelta(days=1))
-        next_days_data = self.generateFilePath('data', next_day, 'gdax.csv')
+        self.next_day = self.dateObjectToString(self.dateStringToObject(self.date) + timedelta(days=1))
+        next_days_data = self.generateFilePath('data', self.next_day, 'gdax.csv')
         # Getting the real prices for the next day
         test_set = pd.read_csv(next_days_data)
         self.real_price = test_set.iloc[:,3:4].values
@@ -144,11 +144,11 @@ class ETHTrader(RNN):
 
     def visualizeResults(self):
         print('Visualizing results')
-        desired_dates_to_visualize = ['2016/05/24', '2017/08/01', '2017/08/15'] #
+        desired_dates_to_visualize = ['2016/05/25', '2016/05/26', '2017/08/01', '2017/08/15'] #
         if self.date in desired_dates_to_visualize: #
             plt.plot(self.real_price, color = 'red', label = 'Real ETH Price')
             plt.plot(self.predicted_price, color = 'blue', label = 'Predicted ETH Price')
-            plt.title('ETH Price Prediction' + ' ' + self.date)
+            plt.title('ETH Price Prediction' + ' ' + self.next_day)
             plt.xlabel('Time')
             plt.ylabel('ETH Price')
             plt.legend()
