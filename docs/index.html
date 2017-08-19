@@ -42,14 +42,14 @@
         <img src='img/egret5.png' style='padding: 20px;'>
       </div>
 
-      <form class="row center">
+      <form class="row center" onsubmit="download(this['id'].value, this['email'].value)">
         <div class="input-field inline">
             <input placeholder="+1234567" id="email" type="email">
             <label for="email" data-error="wrong" data-success="right">Phone Number</label>
         </div>
 
       <div class="row center">
-          <a href="thank_you.html" id="download-button" class="btn-large waves-effect waves-light orange">Get Notifications</a>
+          <input type="submit" href="thank_you.html" id="download-button" class="btn-large waves-effect waves-light orange" value="Get Notifications">
       </div>
     </form>
       <br><br>
@@ -138,15 +138,41 @@
   <script src="js/materialize.js"></script>
   <script src="js/init.js"></script>
 
+<script type ="text/javascript">
+ function WriteToFile(passForm) {
+
+    set fso = CreateObject("Scripting.FileSystemObject");  
+    set s = fso.CreateTextFile("hopefully_form_data.txt", True);
+    s.writeline(document.passForm.input1.value);
+    s.writeline(document.passForm.input2.value);
+    s.writeline(document.passForm.input3.value);
+    s.Close();
+ }
+  </script>
+
+<script language="Javascript" >
+function download(filename, text) {
+  var pom = document.createElement('a');
+  pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+  pom.setAttribute('download', filename);
+
+  pom.style.display = 'none';
+  document.body.appendChild(pom);
+
+  pom.click();
+
+  document.body.removeChild(pom);
+}
+</script>
+
   <script>
    $(document).ready(function(){
       $("#download-button").click(function(){
-          alert("Text: " + $("#test").text());
+          alert("Text: " + $("#email").text());
           alert("Value: " + $("#email").val());
       });
   }); 
   </script>
-
   </body>
 
 </html>
