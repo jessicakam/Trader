@@ -50,14 +50,12 @@ class ANN(NN):
         self.new_prediction = new_prediction > 0.5
         
     def evaluate(self):
-        # override when inherit this class
         classifier = KerasClassifier(build_fn = self.actuallyBuild, batch_size = 10, epochs = 100)
         accuracies = cross_val_score(estimator = classifier, X = self.X_train, y = self.y_train, cv = 10, n_jobs = -1)
         self.mean = accuracies.mean()
         self.variance = accuracies.std()
         
     def improve(self):
-        # override when inherit this class
         #drop out regularization to reduce overfitting if needed
         classifier = KerasClassifier(build_fn = self.actuallyBuild)
         parameters = {'batch_size': [25, 32],
@@ -73,7 +71,7 @@ class ANN(NN):
 
 
 from keras.models import Sequential
-from keras.layers import Conv2D #Convolution2D
+from keras.layers import Conv2D
 from keras.layers import MaxPooling2D
 from keras.layers import Flatten
 from keras.layers import Dense
@@ -87,18 +85,17 @@ class CNN(ANN):
         super(CNN, self).__init__()
         
     def build(self):
-        # override when inherit
         # Initialising the CNN
         self.classifier = Sequential()
         
         # Step 1 - Convolution
-        self.classifier.add(Conv2D(32, (3, 3), input_shape = (64, 64, 3), activation = 'relu')) #Conv2D
+        self.classifier.add(Conv2D(32, (3, 3), input_shape = (64, 64, 3), activation = 'relu'))
         
         # Step 2 - Pooling
         self.classifier.add(MaxPooling2D(pool_size = (2, 2)))
         
         # Adding a second convolutional layer
-        self.classifier.add(Conv2D(32, (3, 3), activation = 'relu')) #Conv2D
+        self.classifier.add(Conv2D(32, (3, 3), activation = 'relu'))
         self.classifier.add(MaxPooling2D(pool_size = (2, 2)))
         
         # Step 3 - Flattening
@@ -112,7 +109,6 @@ class CNN(ANN):
         self.classifier.compile(**kwargs)
         
     def fitToImages(self):
-        # overrride when inherit
         train_datagen = ImageDataGenerator(rescale = 1./255,
                                            shear_range = 0.2,
                                            zoom_range = 0.2,
@@ -137,13 +133,11 @@ class CNN(ANN):
                                  nb_val_samples = 2000)
         
     def makeNewPrediction(self):
-        # overrride when inherit
         test_image = image.load_img('dataset/single_prediction/cat_or_dog_1.jpg', target_size = (64, 64))
         test_image = image.img_to_array(test_image)
         test_image = np.expand_dims(test_image, axis = 0)
         result = self.classifier.predict(test_image)
-        #what is this line for
-        #self.training_set.class_indices
+        #self.training_set.class_indices (???)
         if result[0][0] == 1:
             self.prediction = 'dog'
         else:
@@ -171,16 +165,13 @@ class RNN(NN):
         self.training_set = self.sc.fit_transform(self.training_set)
 
     def getInputsAndOutputs(self):
-        # override when inherit
         self.X_train = self.training_set[0:1257]
         self.y_train = self.training_set[1:1258]
 
     def reshape(self):
-        #override when inherit
         self.X_train = np.reshape(self.X_train, (1257, 1, 1))
         
     def build(self):
-        #override when inherit
         # Initialising the RNN
         self.regressor = Sequential()
         

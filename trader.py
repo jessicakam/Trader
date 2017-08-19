@@ -23,7 +23,7 @@ class ETHTrader(RNN):
     TRADER_TYPE = 'eth'
     DATE_FORMAT = '%Y/%m/%d'
     MODEL_FOLDER = 'models'
-    MODEL_NAME = 'ETHTrader.hd5' ##
+    MODEL_NAME = 'ETHTrader.hd5'
     SCALER_FOLDER = 'scaler'
     SCALER_NAME = 'ETHTrader_sc.save'
     
@@ -48,8 +48,7 @@ class ETHTrader(RNN):
             print('Running trader for {0}'.format(self.date))
             if self.already_trained:
                 self.loadModel()
-                self.deleteOld(ETHTrader.MODEL_FOLDER, ETHTrader.MODEL_NAME) #folder, filename
-            #self.findFileToImport()
+                self.deleteOld(ETHTrader.MODEL_FOLDER, ETHTrader.MODEL_NAME)
             self.importTrainingSet()
             self.scaleFeatures()
             self.getInputsAndOutputs()
@@ -58,14 +57,11 @@ class ETHTrader(RNN):
                 self.build()
                 self.compileNN()
             self.fitToTrainingSet()
-            #maybe later unindent these three at the end
+            # maybe later unindent these three at the end
             self.makePredictions()
             self.visualizeResults()
             self.evaluate()
             self.saveModel()
-
-    #def findFileToImport(self):
-    #    self.file_to_import = self.generateFilePath('data', 'gdax.csv')
         
     def generateFilePath(self, folder, date, filename):
         return os.path.join(folder, ETHTrader.TRADER_TYPE, date, filename)
@@ -88,8 +84,8 @@ class ETHTrader(RNN):
     def importTrainingSet(self):
         print('Importing training set')
         self.file_to_import = self.generateFilePath('data', self.date, 'gdax.csv')
-        self.training_set = pd.read_csv(self.file_to_import) #'data/eth/2017/08/01/gdax.csv')
-        self.training_set = self.training_set.iloc[:,3:4].values #1:2
+        self.training_set = pd.read_csv(self.file_to_import)
+        self.training_set = self.training_set.iloc[:,3:4].values
         self.num_observations = len(self.training_set)
 
     def scaleFeatures(self):
@@ -100,17 +96,17 @@ class ETHTrader(RNN):
             self.deleteOld(ETHTrader.SCALER_FOLDER, ETHTrader.SCALER_NAME)
         # save new scaler
         self.makeFolders(ETHTrader.SCALER_FOLDER)
-        scaler_filename = self.generateFilePath(ETHTrader.SCALER_FOLDER, self.date, ETHTrader.SCALER_NAME) #os.path.join('scaler', 'eth', self.date, 'sc.save')
+        scaler_filename = self.generateFilePath(ETHTrader.SCALER_FOLDER, self.date, ETHTrader.SCALER_NAME)
         joblib.dump(self.sc, scaler_filename)
 
     def getInputsAndOutputs(self):
         print('Getting inputs and outputs')
-        self.X_train = self.training_set[0:self.num_observations-1] #0:23 #0:1257, files lines = 1259
-        self.y_train = self.training_set[1:self.num_observations] #1:24 #1:1258
+        self.X_train = self.training_set[0:self.num_observations-1]
+        self.y_train = self.training_set[1:self.num_observations]
 
     def reshape(self):
         print('Reshaping')
-        self.X_train = np.reshape(self.X_train, (len(self.X_train), 1, 1)) #23, 1, 1 #(observations, timestamp, num_features)
+        self.X_train = np.reshape(self.X_train, (len(self.X_train), 1, 1)) #(observations, timestamp, num_features)
         
     def build(self):
         print('Building...')
@@ -129,24 +125,26 @@ class ETHTrader(RNN):
     def fitToTrainingSet(self):
         print('Fitting to training set')
         self.regressor.fit(self.X_train, self.y_train, batch_size = 32, epochs = 200)
-        self.already_trained = True ##
+        self.already_trained = True
         
     def makePredictions(self):
         print('Making predictions')
-        # Getting the real prices for a day
-        test_set = pd.read_csv(self.file_to_import) #'data/eth/2017/08/01/gdax.csv')
+        next_day = self.dateObjectToString(self.dateStringToObject(self.date) + timedelta(days=1))
+        next_days_data = self.generateFilePath('data', next_day, 'gdax.csv')
+        # Getting the real prices for the next day
+        test_set = pd.read_csv(next_days_data)
         self.real_price = test_set.iloc[:,3:4].values
         
-        # Getting the predicted prices for the day
+        # Getting the predicted prices for the next day
         inputs = self.real_price
         inputs = self.sc.transform(inputs)
-        inputs = np.reshape(inputs, (len(self.real_price), 1, 1)) #24, 1, 1
+        inputs = np.reshape(inputs, (len(self.real_price), 1, 1))
         self.predicted_price = self.regressor.predict(inputs)
         self.predicted_price = self.sc.inverse_transform(self.predicted_price)
 
     def visualizeResults(self):
         print('Visualizing results')
-        desired_dates_to_visualize = ['2017/08/01', '2017/08/15'] #
+        desired_dates_to_visualize = ['2016/05/24', '2017/08/01', '2017/08/15'] #
         if self.date in desired_dates_to_visualize: #
             plt.plot(self.real_price, color = 'red', label = 'Real ETH Price')
             plt.plot(self.predicted_price, color = 'blue', label = 'Predicted ETH Price')
@@ -159,13 +157,10 @@ class ETHTrader(RNN):
     def evaluate(self):
         print('Evaluating')
         self.rmse = math.sqrt(mean_squared_error(self.real_price, self.predicted_price))
-        
-    #def generateModelName(self, date):
-    #    return os.path.join('models', 'eth', date, 'RNNTrader.hd5')#'RNNTrader_testing_sc.hd5') #
     
     def makeFolders(self, initial_folder):
         year, month, day = self.date.split('/')
-        folders = [ETHTrader.TRADER_TYPE, year, month, day] #model
+        folders = [ETHTrader.TRADER_TYPE, year, month, day]
         if not os.path.exists(initial_folder):
             os.makedirs(initial_folder)
         path_so_far = initial_folder
@@ -175,7 +170,7 @@ class ETHTrader(RNN):
                 os.makedirs(path_so_far)
     
     def saveModel(self):
-        model_name = self.generateFilePath(ETHTrader.MODEL_FOLDER, self.date, ETHTrader.MODEL_NAME) #self.generateModelName(self.date)
+        model_name = self.generateFilePath(ETHTrader.MODEL_FOLDER, self.date, ETHTrader.MODEL_NAME)
         self.makeFolders(ETHTrader.MODEL_FOLDER)
         self.regressor.save(model_name)
         del self.regressor
@@ -186,40 +181,17 @@ class ETHTrader(RNN):
         model_name = self.locateMostRecent(ETHTrader.MODEL_FOLDER, prev_day, ETHTrader.MODEL_NAME)
         self.regressor = load_model(model_name)
     
-    """
-    def deleteOldModel(self):
-        print('Deleting old model...')
-        prev_day = self.dateStringToObject(self.date) - timedelta(days=1) ##this line prob not necessary
-        model_name = self.locateMostRecentModel(prev_day)
-        os.remove(model_name)
-        
-    def locateMostRecentModel(self, date_object):
-        model_found = False #
-        while not model_found:    
-            #model_name = self.generateModelName(self.dateObjectToString(date_object))
-            model_name = self.generateFilePath(ETHTrader.MODEL_FOLDER, self.dateObjectToString(date_object), ETHTrader.MODEL_NAME)
-            print("model_name: {0}".format(model_name))
-            if os.path.isfile(model_name):
-                model_found = True #
-            else:
-                date_object = date_object - timedelta(days=1)
-        print('Model located: {0}'.format(model_name))
-        return model_name
-    
-    """
     def deleteOld(self, folder, filename):
         print('Deleting old...')
-        #prev_day = self.dateStringToObject(self.date) - timedelta(days=1)
         most_recent = self.locateMostRecent(folder, self.dateStringToObject(self.date), filename)
         os.remove(most_recent)
         
     def locateMostRecent(self, folder, date_object, filename):
-        found = False #
+        found = False
         while not found:    
-            #model_name = self.generateModelName(self.dateObjectToString(date_object))
             most_recent = self.generateFilePath(folder, self.dateObjectToString(date_object), filename)
             if os.path.isfile(most_recent):
-                found = True #
+                found = True
             else:
                 date_object = date_object - timedelta(days=1)
         print('Located: {0}'.format(most_recent))
