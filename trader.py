@@ -57,10 +57,10 @@ class ETHTrader(RNN):
                 self.build()
                 self.compileNN()
             self.fitToTrainingSet()
-            # maybe later unindent these three at the end
-            self.makePredictions()
-            self.visualizeResults()
-            self.evaluate()
+            # for when trying to see how good model is
+            #self.makePredictions()
+            #self.visualizeResults()
+            #self.evaluate()
             self.saveModel()
         
     def generateFilePath(self, folder, date, filename):
