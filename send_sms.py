@@ -23,10 +23,13 @@ class SMSMessenger():
     def run(self):
         self.updateMasterList()
         self.getMsg()
+        self.sendMsgs()
+        """
         for number in self.master_list:
             print('number: {0}'.format(self.master_list))
             self.SEND_TO = number
             self.sendMsg()
+        """
 
     def updateMasterList(self):
         self.saveOldMasterList()
@@ -38,12 +41,14 @@ class SMSMessenger():
         print('Saving old master list...')
         self.path = SMSMessenger.WEB_NUMBERS_LOCATION
         # save current master list, assuming numbers in master list are correctly formatted
-        if not os.path.exists(SMSMessenger.MASTER_LIST_NUMBERS):
-            os.makedirs(SMSMessenger.MASTER_LIST_NUMBERS)
-        with open(SMSMessenger.MASTER_LIST_NUMBERS, 'r') as master_list:
-            #for line in master_list:
-            #    self.master_list.append(line)
-            self.master_lst = master_list.readlines()
+        #if not os.path.exists(SMSMessenger.MASTER_LIST_NUMBERS):
+        #    os.makedirs(SMSMessenger.MASTER_LIST_NUMBERS)
+        with open(SMSMessenger.MASTER_LIST_NUMBERS, 'r') as f:
+            for line in f:
+                stripped_number = line.replace('\n', '')
+                if stripped_number:
+                    self.master_list.append(stripped_number)
+            #self.master_lst = master_list.readlines()
         print(self.master_list)
             
     def addSubscribers(self):
@@ -52,10 +57,14 @@ class SMSMessenger():
         for f in files_to_subscribe:
             file_path = os.path.join(self.path, f)
             with open(file_path, 'r') as new_number_file:
-                phone_number = new_number_file.readline()
-                parsed_number = self.parseNumber(phone_number)
-                if parsed_number:
-                    self.master_lst.append('+1' + phone_number)
+                for line in new_number_file:
+                    stripped_number = line.replace('\n', '')
+                    if stripped_number and self.parseNumber(stripped_number):
+                        self.master_list.append('+1' + self.parseNumber(stripped_number))
+                #phone_number = new_number_file.readline()
+                #parsed_number = self.parseNumber(phone_number)
+                #if parsed_number:
+                #    self.master_lst.append('+1' + phone_number)
             os.remove(file_path)
         print(self.master_list)
             
@@ -66,15 +75,23 @@ class SMSMessenger():
         for f in files_to_unsubscribe:
             file_path = os.path.join(self.path, f)
             with open(file_path, 'r') as new_number_file:
-                unsubscribe_number = new_number_file.readline()
-                parsed_number = self.parseNumber(unsubscribe_number)
-                if parsed_number:
-                    lst_to_unsubscribe.append('+1' + unsubscribe_number)
-                # also save to master unsubscribe list
-                with open(SMSMessenger.MASTER_LIST_UNSUBSCRIBED, 'a') as f:
-                    f.write('+1' + unsubscribe_number + '\n') 
+                for line in new_number_file:
+                    stripped_number = line.replace('\n', '')
+                    if stripped_number and self.parseNumber(stripped_number):
+                        number = '+1' + self.parseNumber(stripped_number)
+                        lst_to_unsubscribe.append(number)
+                #unsubscribe_number = new_number_file.readline()
+                #parsed_number = self.parseNumber(unsubscribe_number)
+                #if parsed_number:
+                #    lst_to_unsubscribe.append('+1' + unsubscribe_number)
+                
+                        # also save to master unsubscribe list
+                        with open(SMSMessenger.MASTER_LIST_UNSUBSCRIBED, 'a') as f:
+                            f.write(number + '\n') 
+                            #f.write('+1' + unsubscribe_number + '\n') 
             os.remove(file_path)
         for unsubscriber in lst_to_unsubscribe:
+            print('unsub: {0}'.format(unsubscriber))
             if unsubscriber in self.master_lst:
                 self.master_lst.remove(unsubscriber)
         print(self.master_list)
@@ -82,9 +99,10 @@ class SMSMessenger():
     
     def createNewMasterList(self):
         print('Creating a new master list...')
-        with open(SMSMessenger.MASTER_LIST_NUMBERS, 'w') as master_list:
+        with open(SMSMessenger.MASTER_LIST_NUMBERS, 'w') as f:
             for number in self.master_lst:
-                master_list.write(number + '\n')
+                print('num adding to new list: {0}'.format(number))
+                f.write(number + '\n')
 
     def parseNumber(self, line):
         number = ''
@@ -109,11 +127,13 @@ class SMSMessenger():
             for line in f:
                 self.msg = self.msg + line + ' '
 
-    def sendMsg(self):
-        self.client.api.account.messages.create(to=self.SEND_TO,
+    def sendMsgs(self):
+        for number in self.master_list:
+            self.SEND_TO = number
+            self.client.api.account.messages.create(to=self.SEND_TO,
                                            from_= self.SEND_FROM,
                                            body=self.msg)
-        print('Sent msg to {0}'.format(self.SEND_TO))
+            print('Sent msg to {0}'.format(self.SEND_TO))
 
 if __name__=='__main__':
     tw = SMSMessenger()
