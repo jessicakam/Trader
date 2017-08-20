@@ -24,6 +24,7 @@ class SMSMessenger():
         self.updateMasterList()
         self.getMsg()
         for number in self.master_list:
+            print('number: {0}'.format(self.master_list))
             self.SEND_TO = number
             self.sendMsg()
 
@@ -40,7 +41,10 @@ class SMSMessenger():
         if not os.path.exists(SMSMessenger.MASTER_LIST_NUMBERS):
             os.makedirs(SMSMessenger.MASTER_LIST_NUMBERS)
         with open(SMSMessenger.MASTER_LIST_NUMBERS, 'r') as master_list:
+            #for line in master_list:
+            #    self.master_list.append(line)
             self.master_lst = master_list.readlines()
+        print(self.master_list)
             
     def addSubscribers(self):
         print('Adding new subscribers...')
@@ -53,6 +57,7 @@ class SMSMessenger():
                 if parsed_number:
                     self.master_lst.append('+1' + phone_number)
             os.remove(file_path)
+        print(self.master_list)
             
     def removeUnsubscribers(self):
         print('Removing unsubscribers...')
@@ -72,6 +77,8 @@ class SMSMessenger():
         for unsubscriber in lst_to_unsubscribe:
             if unsubscriber in self.master_lst:
                 self.master_lst.remove(unsubscriber)
+        print(self.master_list)
+        
     
     def createNewMasterList(self):
         print('Creating a new master list...')
