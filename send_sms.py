@@ -33,7 +33,7 @@ class TwilioMessenger():
             with open(file_path, 'r') as new_number_file:
                 with open(TwilioMessenger.MASTER_LIST_NUMBERS, 'a') as master_list:
                     phone_number = new_number_file.readline()
-                    master_list.write(phone_number)
+                    master_list.write(phone_number + '\n')
             os.remove(file_path)
 
     def getNumbers(self):
