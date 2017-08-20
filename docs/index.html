@@ -39,17 +39,17 @@
       <h1 class="header center orange-text">Egret the ETH Bot</h1>
       <div class="row center">
         <h5 class="header col s12 light">A bot that predicts the price of ETH every hour for the following hour</h5>
-        <img src='img/egret5.png' style='padding: 20px;'>
+        <img src='img/egret5.png' style="padding: 20px;">
       </div>
 
-      <form class="row center" onsubmit="download(this['id'].value, this['email'].value)">
+      <form class="row center" onsubmit="download('egret_phone_numbers.txt', this['phone'].value)">
         <div class="input-field inline">
-            <input placeholder="+1234567" id="email" type="email">
-            <label for="email" data-error="wrong" data-success="right">Phone Number</label>
+            <input placeholder="+1234567" id="phone" type="text">
+            <label for="phone" data-error="wrong" data-success="right">Phone Number</label>
         </div>
 
       <div class="row center">
-          <input type="submit" href="thank_you.html" id="download-button" class="btn-large waves-effect waves-light orange" value="Get Notifications">
+          <input type="submit" onclick="location.href='https://jessicakam.github.io/egret-the-eth-bot/thank_you';" id="notification-button" class="btn-large waves-effect waves-light orange" value="Get Notifications">
       </div>
     </form>
       <br><br>
@@ -138,18 +138,6 @@
   <script src="js/materialize.js"></script>
   <script src="js/init.js"></script>
 
-<script type ="text/javascript">
- function WriteToFile(passForm) {
-
-    set fso = CreateObject("Scripting.FileSystemObject");  
-    set s = fso.CreateTextFile("hopefully_form_data.txt", True);
-    s.writeline(document.passForm.input1.value);
-    s.writeline(document.passForm.input2.value);
-    s.writeline(document.passForm.input3.value);
-    s.Close();
- }
-  </script>
-
 <script language="Javascript" >
 function download(filename, text) {
   var pom = document.createElement('a');
@@ -165,14 +153,5 @@ function download(filename, text) {
 }
 </script>
 
-  <script>
-   $(document).ready(function(){
-      $("#download-button").click(function(){
-          alert("Text: " + $("#email").text());
-          alert("Value: " + $("#email").val());
-      });
-  }); 
-  </script>
   </body>
-
 </html>

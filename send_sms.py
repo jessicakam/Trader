@@ -1,9 +1,14 @@
 import twilio_secrets as ts
 
 import re
+import os
 from twilio.rest import Client
 
 class TwilioMessenger():
+    
+    MASTER_LIST_NUMBERS = 'master_list_phone_numbers.txt'
+    NUMBERS_FROM_WEB_FORM = 'egret_phone'
+    WEB_NUMBERS_LOCATION = '/home/jessicakam/Downloads'
 
     def __init__(self):
         self.account_sid = ts.ACCOUNT_SID
@@ -13,15 +18,27 @@ class TwilioMessenger():
         self.client = Client(self.account_sid, self.auth_token)
 
     def run(self):
+        self.updateMasterListNumbers()
         self.getNumbers()
         self.getMsg()
         for number in self.numbers:
             self.SEND_TO = number
             self.sendMsg()
 
+    def updateMasterListNumbers(self):
+        path = TwilioMessenger.WEB_NUMBERS_LOCATION
+        files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path,f)) and 'egret_phone' in f]
+        for f in files:
+            file_path = os.path.join(path, f)
+            with open(file_path, 'r') as new_number_file:
+                with open(TwilioMessenger.MASTER_LIST_NUMBERS, 'a') as master_list:
+                    phone_number = new_number_file.readline()
+                    master_list.write(phone_number)
+            os.remove(file_path)
+
     def getNumbers(self):
-       self.numbers = []
-       with open('phone_numbers.txt', 'r') as f:
+        self.numbers = []
+        with open(TwilioMessenger.MASTER_LIST_NUMBERS, 'r') as f:
             for line in f:
                 parsed_number = self.parseNumber(line)
                 if parsed_number:
