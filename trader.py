@@ -48,7 +48,7 @@ class ETHTrader(RNN):
             print('Running trader for {0}'.format(self.date))
             if self.already_trained:
                 self.loadModel()
-                self.deleteOld(ETHTrader.MODEL_FOLDER, ETHTrader.MODEL_NAME)
+                #self.deleteOld(ETHTrader.MODEL_FOLDER, ETHTrader.MODEL_NAME)
             self.importTrainingSet()
             self.scaleFeatures()
             self.getInputsAndOutputs()
@@ -92,8 +92,8 @@ class ETHTrader(RNN):
         print('Scaling features')
         self.sc = MinMaxScaler()
         self.training_set = self.sc.fit_transform(self.training_set)
-        if self.already_trained:
-            self.deleteOld(ETHTrader.SCALER_FOLDER, ETHTrader.SCALER_NAME)
+        #if self.already_trained:
+        #    self.deleteOld(ETHTrader.SCALER_FOLDER, ETHTrader.SCALER_NAME)
         # save new scaler
         self.makeFolders(ETHTrader.SCALER_FOLDER)
         scaler_filename = self.generateFilePath(ETHTrader.SCALER_FOLDER, self.date, ETHTrader.SCALER_NAME)
