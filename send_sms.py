@@ -4,10 +4,12 @@ import re
 import os
 from twilio.rest import Client
 
-class TwilioMessenger():
+class SMSMessenger():
     
     MASTER_LIST_NUMBERS = 'master_list_phone_numbers.txt'
-    NUMBERS_FROM_WEB_FORM = 'egret_phone'
+    MASTER_LIST_UNSUBSCRIBED = 'master_list_unsubscribed_numbers.txt'
+    NUMBERS_TO_SUBSCRIBE = 'egret_phone'
+    NUMBERS_TO_UNSUBSCRIBE = 'egret_unsubscribe_numbers'
     WEB_NUMBERS_LOCATION = '/home/jessicakam/Downloads'
 
     def __init__(self):
@@ -16,33 +18,66 @@ class TwilioMessenger():
         self.SEND_FROM = ts.PHONE_NUMBER 
         self.SEND_TO = ''
         self.client = Client(self.account_sid, self.auth_token)
+        self.master_list = []
 
     def run(self):
-        self.updateMasterListNumbers()
-        self.getNumbers()
+        self.updateMasterList()
         self.getMsg()
-        for number in self.numbers:
+        for number in self.master_list:
             self.SEND_TO = number
             self.sendMsg()
 
-    def updateMasterListNumbers(self):
-        path = TwilioMessenger.WEB_NUMBERS_LOCATION
-        files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path,f)) and 'egret_phone' in f]
-        for f in files:
-            file_path = os.path.join(path, f)
+    def updateMasterList(self):
+        self.saveOldMasterList()
+        self.addSubscribers()
+        self.removeUnsubscribers()
+        self.createNewMasterList()
+        
+    def saveOldMasterList(self):
+        print('Saving old master list...')
+        self.path = SMSMessenger.WEB_NUMBERS_LOCATION
+        # save current master list, assuming numbers in master list are correctly formatted
+        if not os.path.exists(SMSMessenger.MASTER_LIST_NUMBERS):
+            os.makedirs(SMSMessenger.MASTER_LIST_NUMBERS)
+        with open(SMSMessenger.MASTER_LIST_NUMBERS, 'r') as master_list:
+            self.master_lst = master_list.readlines()
+            
+    def addSubscribers(self):
+        print('Adding new subscribers...')
+        files_to_subscribe = [f for f in os.listdir(self.path) if os.path.isfile(os.path.join(self.path,f)) and SMSMessenger.NUMBERS_TO_SUBSCRIBE in f]
+        for f in files_to_subscribe:
+            file_path = os.path.join(self.path, f)
             with open(file_path, 'r') as new_number_file:
-                with open(TwilioMessenger.MASTER_LIST_NUMBERS, 'a') as master_list:
-                    phone_number = new_number_file.readline()
-                    master_list.write(phone_number + '\n')
-            os.remove(file_path)
-
-    def getNumbers(self):
-        self.numbers = []
-        with open(TwilioMessenger.MASTER_LIST_NUMBERS, 'r') as f:
-            for line in f:
-                parsed_number = self.parseNumber(line)
+                phone_number = new_number_file.readline()
+                parsed_number = self.parseNumber(phone_number)
                 if parsed_number:
-                    self.numbers.append(parsed_number)
+                    self.master_lst.append('+1' + phone_number)
+            os.remove(file_path)
+            
+    def removeUnsubscribers(self):
+        print('Removing unsubscribers...')
+        files_to_unsubscribe = [f for f in os.listdir(self.path) if os.path.isfile(os.path.join(self.path,f)) and SMSMessenger.NUMBERS_TO_UNSUBSCRIBE in f]
+        lst_to_unsubscribe = []
+        for f in files_to_unsubscribe:
+            file_path = os.path.join(self.path, f)
+            with open(file_path, 'r') as new_number_file:
+                unsubscribe_number = new_number_file.readline()
+                parsed_number = self.parseNumber(unsubscribe_number)
+                if parsed_number:
+                    lst_to_unsubscribe.append('+1' + unsubscribe_number)
+                # also save to master unsubscribe list
+                with open(SMSMessenger.MASTER_LIST_UNSUBSCRIBED, 'a') as f:
+                    f.write('+1' + unsubscribe_number + '\n') 
+            os.remove(file_path)
+        for unsubscriber in lst_to_unsubscribe:
+            if unsubscriber in self.master_lst:
+                self.master_lst.remove(unsubscriber)
+    
+    def createNewMasterList(self):
+        print('Creating a new master list...')
+        with open(SMSMessenger.MASTER_LIST_NUMBERS, 'w') as master_list:
+            for number in self.master_lst:
+                master_list.write(number + '\n')
 
     def parseNumber(self, line):
         number = ''
@@ -57,7 +92,7 @@ class TwilioMessenger():
         if results and p1 and p2 and p3:
             number = p1 + p2 + p3
         if number:
-            return '+1' + number
+            return number
         print('Number not valid')
         return ''
 
@@ -74,5 +109,5 @@ class TwilioMessenger():
         print('Sent msg to {0}'.format(self.SEND_TO))
 
 if __name__=='__main__':
-    tw = TwilioMessenger()
+    tw = SMSMessenger()
     tw.run()
