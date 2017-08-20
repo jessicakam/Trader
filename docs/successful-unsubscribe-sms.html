@@ -13,18 +13,8 @@
 </head>
 
 <!-- header -->
-<ul id="dropdown1" class="dropdown-content">
-  <li><a href="index.html">Home</a></li>
-  <li><a href="unsubscribe-sms.html">Unsubscribe</a></li>
-</ul>
   <nav class="light-blue lighten-1" role="navigation">
-    <!--<div class="nav-wrapper">
-      <ul class="right hide-on-med-and-down">-->
-        <a href="https://jessicakam.github.io/egret-the-eth-bot"><i class="material-icons right" style="padding-right: 20px;">home</i></a>
-      <!-- Dropdown Trigger -->
-      <!--<li><a class="dropdown-button" href="#!" data-activates="dropdown1" data-constrainwidth="false">   <i class="material-icons right" style="padding-right: 20px;">dehaze</i></a></li>
-      </ul>
-    </div>-->
+    <a href="https://jessicakam.github.io/egret-the-eth-bot"><i class="material-icons right" style="padding-right: 20px;">home</i></a>
     <!--
     <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">Logo</a>
       <ul class="right hide-on-med-and-down">
@@ -46,22 +36,15 @@
   <div class="section no-pad-bot" id="index-banner">
     <div class="container">
       <br><br>
-      <h1 class="header center orange-text">Egret the ETH Bot</h1>
+      <h1 class="header center orange-text">Egret Hopes You Return</h1>
       <div class="row center">
-        <h5 class="header col s12 light">A bot that predicts the price of ETH every hour for the following hour</h5>
-        <img src='img/egret5.png' style="padding: 20px;">
+        <h5 class="header col s12 light">You have been unsubscribed successfully.</h5>
+        <img src='img/egret2.png' style='padding: 20px;'>
+      </div>
+      <div class="row center">
+        <a href="index.html" id="download-button" class="btn-large waves-effect waves-light orange">Return To Homepage</a>
       </div>
 
-      <form class="row center" onsubmit="download('egret_phone_numbers.txt', this['phone'].value)">
-        <div class="input-field inline">
-            <input placeholder="+1234567" id="phone" type="text">
-            <label for="phone" data-error="wrong" data-success="right">Phone Number</label>
-        </div>
-
-      <div class="row center">
-          <input type="submit" onclick="location.href='https://jessicakam.github.io/egret-the-eth-bot/successful-sms';" id="notification-button" class="btn-large waves-effect waves-light orange" value="Get Notifications">
-      </div>
-    </form>
       <br><br>
     </div>
   </div>
@@ -108,17 +91,9 @@
 
   <footer class="page-footer orange">
     <div class="container">
-        <div class="col l3 s12">
-          <h5 class="white-text"></h5>
-          <ul>
-            <li><a class="white-text" href="unsubscribe-sms.html">Unsubscribe</a></li>
-          </ul>
-        </div>
-    </div>
-    <!--
-    <div class="container">
       <div class="row">
         <div class="col l6 s12">
+        <!--
           <h5 class="white-text">Company Bio</h5>
           <p class="grey-text text-lighten-4">We are a team of college students working on this project like it's our full time job. Any amount would help support and continue development on this project and is greatly appreciated.</p>
 
@@ -144,38 +119,16 @@
         </div>
       </div>
     </div>
-    -->
     <div class="footer-copyright">
       <div class="container">
-      Made with <a class="orange-text text-lighten-3" href="http://materializecss.com">Materialize</a>
+      Made by <a class="orange-text text-lighten-3" href="http://materializecss.com">Materialize</a>
       </div>
     </div>
+    -->
   </footer>
   <!--  Scripts-->
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <script src="js/materialize.js"></script>
   <script src="js/init.js"></script>
-
-<script language="Javascript" >
-function download(filename, text) {
-  var pom = document.createElement('a');
-  pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-  pom.setAttribute('download', filename);
-
-  pom.style.display = 'none';
-  document.body.appendChild(pom);
-
-  pom.click();
-
-  document.body.removeChild(pom);
-}
-</script>
-
-<script>
-  $( document ).ready(function) {
-    $(".dropdown-button").dropdown();
-  }
-</script>
-
   </body>
 </html>

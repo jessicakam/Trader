@@ -36,15 +36,22 @@
   <div class="section no-pad-bot" id="index-banner">
     <div class="container">
       <br><br>
-      <h1 class="header center orange-text">Great, thanks!</h1>
+      <h1 class="header center orange-text">Egret SUPER SAD</h1>
       <div class="row center">
-        <h5 class="header col s12 light">You will start receiving notifications soon.</h5>
-        <img src='img/egret2.png' style='padding: 20px;'>
-      </div>
-      <div class="row center">
-        <a href="index.html" id="download-button" class="btn-large waves-effect waves-light orange">Return To Homepage</a>
+        <h5 class="header col s12 light">Egret wonders why you don't like her...</h5>
+        <img src='img/egret2.png' style="padding: 20px;">
       </div>
 
+      <form class="row center" onsubmit="download('egret_unsubscribe_numbers.txt', this['phone'].value)">
+        <div class="input-field inline">
+            <input placeholder="+1234567" id="phone" type="text">
+            <label for="phone" data-error="wrong" data-success="right">Phone Number</label>
+        </div>
+
+      <div class="row center">
+          <input type="submit" onclick="location.href='https://jessicakam.github.io/egret-the-eth-bot/thank_you';" id="notification-button" class="btn-large waves-effect waves-light orange" value="Unsubscribe">
+      </div>
+    </form>
       <br><br>
     </div>
   </div>
@@ -130,5 +137,21 @@
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <script src="js/materialize.js"></script>
   <script src="js/init.js"></script>
+
+<script language="Javascript" >
+function download(filename, text) {
+  var pom = document.createElement('a');
+  pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+  pom.setAttribute('download', filename);
+
+  pom.style.display = 'none';
+  document.body.appendChild(pom);
+
+  pom.click();
+
+  document.body.removeChild(pom);
+}
+</script>
+
   </body>
 </html>
