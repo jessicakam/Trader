@@ -12,7 +12,7 @@ from keras.models import load_model
 
 class PricePredicter(ETHTrader):
     
-    PREDICTION_FOLDER = 'predictions'
+    PREDICTION_FOLDER = 'predictions_unscaled' ##
     PREDICTION_FILENAME = 'predictions.txt'
     
     def __init__(self):

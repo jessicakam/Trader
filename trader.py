@@ -22,10 +22,10 @@ class ETHTrader(RNN):
     
     TRADER_TYPE = 'eth'
     DATE_FORMAT = '%Y/%m/%d'
-    MODEL_FOLDER = 'models'
+    MODEL_FOLDER = 'models_unscaled'
     MODEL_NAME = 'ETHTrader.hd5'
-    SCALER_FOLDER = 'scaler'
-    SCALER_NAME = 'ETHTrader_sc.save'
+    #SCALER_FOLDER = 'scaler'
+    #SCALER_NAME = 'ETHTrader_sc.save'
     
     def __init__(self, **kwargs):
         super(ETHTrader, self).__init__()
@@ -50,7 +50,7 @@ class ETHTrader(RNN):
                 self.loadModel()
                 #self.deleteOld(ETHTrader.MODEL_FOLDER, ETHTrader.MODEL_NAME)
             self.importTrainingSet()
-            self.scaleFeatures()
+            ##self.scaleFeatures()
             self.getInputsAndOutputs()
             self.reshape()
             if not self.already_trained:
